@@ -42,4 +42,4 @@
 
 - [x] Run backend tests.
 - [x] Run frontend lint/build/audit.
-- [ ] Commit and push to GitHub.
+- [x] Commit and push to GitHub.
