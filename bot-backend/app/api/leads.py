@@ -1,0 +1,42 @@
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.api.deps import SessionDep, require_admin
+from app.schemas.chat import ChatMessageRead
+from app.schemas.lead import LeadRead, LeadUpdate
+from app.services import chat_service, lead_service
+
+router = APIRouter(prefix="/api/leads", tags=["leads"], dependencies=[Depends(require_admin)])
+
+
+@router.get("", response_model=list[LeadRead])
+async def list_all_leads(session: SessionDep) -> list:
+    return await lead_service.list_leads(session)
+
+
+@router.get("/{lead_id}", response_model=LeadRead)
+async def get_one_lead(lead_id: UUID, session: SessionDep):
+    lead = await lead_service.get_lead(session, lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    return lead
+
+
+@router.patch("/{lead_id}", response_model=LeadRead)
+async def patch_lead(lead_id: UUID, payload: LeadUpdate, session: SessionDep):
+    lead = await lead_service.get_lead(session, lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    try:
+        return await lead_service.update_lead(session, lead, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/{lead_id}/chat", response_model=list[ChatMessageRead])
+async def get_lead_chat(lead_id: UUID, session: SessionDep) -> list:
+    lead = await lead_service.get_lead(session, lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    return await chat_service.get_history(session, lead_id)
