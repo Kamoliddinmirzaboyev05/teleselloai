@@ -89,4 +89,5 @@ async def handle_new_message(event: events.NewMessage.Event) -> None:
                 await conversation_service.delay_before_reply()
             await event.reply(reply)
         except Exception as exc:
+            await session.rollback()
             await log_error(session, "bot.handlers", str(exc), {"chat_id": event.chat_id})
