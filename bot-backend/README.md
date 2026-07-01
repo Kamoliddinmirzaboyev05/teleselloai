@@ -57,3 +57,27 @@ Start the worker locally:
 ```bash
 python -m app.bot.worker
 ```
+
+## First Telegram Login
+
+Before enabling the worker, create the Telethon session once:
+
+```bash
+docker compose run --rm bot-worker python -m app.bot.login
+```
+
+Telegram will send a code to the configured account. Enter that code in the
+terminal. If the account has two-step verification, enter the Telegram password
+when prompted.
+
+After login succeeds, set this in `.env`:
+
+```env
+BOT_WORKER_ENABLED=true
+```
+
+Then restart the worker:
+
+```bash
+docker compose up -d --build bot-worker
+```
