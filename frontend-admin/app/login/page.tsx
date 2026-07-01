@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";
 
 import { login } from "@/lib/api";
+import { getApiBaseUrl, saveApiBaseUrl } from "@/lib/api-config";
 import { saveToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,13 +14,19 @@ export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setBaseUrl(getApiBaseUrl());
+  }, []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
+    saveApiBaseUrl(baseUrl);
     try {
       const response = await login(username, password);
       saveToken(response.access_token);
@@ -41,6 +48,15 @@ export default function LoginPage() {
         <label className="mb-3 block text-sm font-medium">
           Login
           <Input value={username} onChange={(event) => setUsername(event.target.value)} className="mt-1" />
+        </label>
+        <label className="mb-3 block text-sm font-medium">
+          Backend Base URL
+          <Input
+            value={baseUrl}
+            onChange={(event) => setBaseUrl(event.target.value)}
+            className="mt-1"
+            placeholder="https://teleselloai-api.159.223.151.104.sslip.io"
+          />
         </label>
         <label className="mb-4 block text-sm font-medium">
           Parol

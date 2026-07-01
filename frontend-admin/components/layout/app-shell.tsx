@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, LayoutDashboard, LogOut, Send, SlidersHorizontal, Users } from "lucide-react";
+import { Bot, LayoutDashboard, LogOut, Send, Settings, SlidersHorizontal, Users } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { fetchMe } from "@/lib/api";
@@ -76,6 +76,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Users className="h-5 w-5" />
           </button>
         ) : null}
+        <button
+          onClick={() => router.push("/settings")}
+          className={cn(
+            "mt-2 flex h-9 w-9 items-center justify-center rounded",
+            pathname === "/settings" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
+          )}
+          title="Sozlamalar"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
         <button
           onClick={logout}
           className="mt-auto flex h-9 w-9 items-center justify-center rounded text-muted-foreground hover:bg-muted"

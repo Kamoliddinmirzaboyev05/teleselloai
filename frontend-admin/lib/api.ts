@@ -1,11 +1,10 @@
+import { getApiBaseUrl } from "@/lib/api-config";
 import { getToken } from "@/lib/auth";
 import type { AdminUser, AISettings, ChatMessage, CurrentUser, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

@@ -48,6 +48,8 @@ npm run dev
 Open `http://localhost:3000`.
 
 The login request goes to `NEXT_PUBLIC_API_URL/api/auth/login`.
+The frontend also lets the admin edit the backend base URL from the login page
+and from `/settings`; that browser-specific value overrides `NEXT_PUBLIC_API_URL`.
 
 Admin login credentials are checked by the backend env values
 `ADMIN_USERNAME` and `ADMIN_PASSWORD`. The frontend only needs

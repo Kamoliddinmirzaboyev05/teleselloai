@@ -24,6 +24,9 @@ NEXT_PUBLIC_API_URL=https://your-backend-domain
 Login username and password are configured in the backend `.env` with
 `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
 
+The same backend base URL can also be edited from the login page or from
+`/settings` after login. The browser stores that override in localStorage.
+
 The AI training page is available at `/ai-settings` after login.
 
 Superadmins can manage users at `/admins`. Every admin can connect their own
