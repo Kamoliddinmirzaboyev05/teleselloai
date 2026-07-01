@@ -1,5 +1,5 @@
 import { getToken } from "@/lib/auth";
-import type { ChatMessage, Lead, LeadStatus } from "@/lib/types";
+import type { AISettings, ChatMessage, Lead, LeadStatus } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -38,5 +38,16 @@ export function updateLead(leadId: string, patch: Partial<Pick<Lead, "first_name
   return request<Lead>(`/api/leads/${leadId}`, {
     method: "PATCH",
     body: JSON.stringify(patch),
+  });
+}
+
+export function fetchAISettings() {
+  return request<AISettings>("/api/ai-settings");
+}
+
+export function updateAISettings(settings: AISettings) {
+  return request<AISettings>("/api/ai-settings", {
+    method: "PUT",
+    body: JSON.stringify(settings),
   });
 }

@@ -1,13 +1,51 @@
 from app.models.chat_history import ChatHistory
 
-SYSTEM_PROMPT = """You are a helpful Uzbek-speaking sales assistant for Telegram leads.
-Collect useful CRM data naturally. Always append hidden JSON at the end:
-DATA_CAPTURE: {"first_name":null,"phone":null,"product_interest":null,"status":"new"}
-Valid statuses are new, thinking, won, lost. Do not mention DATA_CAPTURE to the customer."""
+BASE_SYSTEM_PROMPT = """You are a helpful Uzbek-speaking sales assistant for Telegram leads.
+Your job is to answer based on the business information below, qualify the lead,
+and move the customer toward a useful next step."""
+
+DATA_CAPTURE_CONTRACT = '{"first_name": null, "phone": null, "product_interest": null, "status": "new"}'
 
 
-def build_messages(history: list[ChatHistory]) -> list[dict[str, str]]:
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+def _append_section(parts: list[str], title: str, value: str | None) -> None:
+    if value:
+        parts.append(f"{title}: {value}")
+
+
+def build_system_prompt(ai_settings: dict | None = None) -> str:
+    settings = ai_settings or {}
+    parts = [BASE_SYSTEM_PROMPT, "Business settings:"]
+    _append_section(parts, "Business name", settings.get("business_name"))
+    _append_section(parts, "Business description", settings.get("business_description"))
+    _append_section(parts, "Services/products", settings.get("services"))
+    _append_section(parts, "Pricing", settings.get("pricing"))
+    _append_section(parts, "Target customers", settings.get("target_customers"))
+    _append_section(parts, "Tone", settings.get("tone"))
+    _append_section(parts, "Languages", settings.get("languages"))
+    _append_section(parts, "Lead fields to collect", settings.get("required_lead_fields"))
+    _append_section(parts, "Do not say or discuss", settings.get("forbidden_topics"))
+    _append_section(parts, "Escalate to admin when", settings.get("escalation_rules"))
+    _append_section(parts, "Extra instructions", settings.get("custom_instructions"))
+
+    faq = settings.get("faq") or []
+    if faq:
+        parts.append("FAQ examples:")
+        for item in faq:
+            question = item.get("question")
+            answer = item.get("answer")
+            if question and answer:
+                parts.append(f"Q: {question}\nA: {answer}")
+
+    parts.append(
+        "Always append hidden JSON at the end exactly in this format:\n"
+        f"DATA_CAPTURE: {DATA_CAPTURE_CONTRACT}\n"
+        "Valid statuses are new, thinking, won, lost. Do not mention DATA_CAPTURE to the customer."
+    )
+    return "\n\n".join(parts)
+
+
+def build_messages(history: list[ChatHistory], ai_settings: dict | None = None) -> list[dict[str, str]]:
+    messages = [{"role": "system", "content": build_system_prompt(ai_settings)}]
     for item in history[-10:]:
         role = "assistant" if item.role == "assistant" else "user"
         messages.append({"role": role, "content": item.content})

@@ -5,7 +5,7 @@ Docker-ready MVP scaffold for a Telegram AI sales assistant and CRM admin panel.
 ## Structure
 
 - `bot-backend/`: Python FastAPI API, Telethon userbot worker, PostgreSQL models, Redis config, Groq integration, Alembic migrations.
-- `frontend-admin/`: Next.js 14 admin CRM with login, Kanban dashboard, and chat detail panel.
+- `frontend-admin/`: Next.js admin CRM with login, Kanban dashboard, chat detail panel, and AI settings editor.
 
 Supabase is not used. The stack is designed for VPS deployment with Docker Compose.
 
@@ -49,6 +49,14 @@ Open `http://localhost:3000`.
 
 The login request goes to `NEXT_PUBLIC_API_URL/api/auth/login`.
 
+Admin login credentials are checked by the backend env values
+`ADMIN_USERNAME` and `ADMIN_PASSWORD`. The frontend only needs
+`NEXT_PUBLIC_API_URL`.
+
+Use `/ai-settings` in the admin panel to teach the assistant about the
+business, services, prices, tone, forbidden topics, escalation rules, and FAQ
+answers. Saved settings are used by the bot on the next customer message.
+
 ## Local Backend Tests
 
 ```bash
@@ -67,6 +75,8 @@ pytest
 - `GET /api/leads/{lead_id}`
 - `PATCH /api/leads/{lead_id}`
 - `GET /api/leads/{lead_id}/chat`
+- `GET /api/ai-settings`
+- `PUT /api/ai-settings`
 
 ## Notes
 

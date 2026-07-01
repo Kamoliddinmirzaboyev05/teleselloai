@@ -42,6 +42,17 @@ API health check:
 curl http://localhost:8000/api/health
 ```
 
+Admin login uses `ADMIN_USERNAME` and `ADMIN_PASSWORD` from `.env`.
+After login, the admin panel can save AI training data through:
+
+```bash
+GET /api/ai-settings
+PUT /api/ai-settings
+```
+
+The bot worker loads these settings before each AI reply, so changes apply to
+new customer messages without restarting the worker.
+
 ## Local Development
 
 ```bash

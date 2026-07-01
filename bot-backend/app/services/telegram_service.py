@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.models.lead import Lead
-from app.services import chat_service, lead_service
+from app.services import ai_settings_service, chat_service, lead_service
 from app.services.groq_service import GroqService
 from app.services.prompt_service import build_messages
 from app.utils.parser import parse_ai_response
@@ -41,7 +41,8 @@ class TelegramConversationService:
             return None
 
         history = await chat_service.get_history(session, lead.id, limit=10)
-        raw_reply = await self.groq.generate_reply(build_messages(history))
+        ai_settings = await ai_settings_service.get_ai_settings(session)
+        raw_reply = await self.groq.generate_reply(build_messages(history, ai_settings))
         clean_reply, captured = parse_ai_response(raw_reply)
         if captured:
             await lead_service.apply_captured_data(session, lead, captured)

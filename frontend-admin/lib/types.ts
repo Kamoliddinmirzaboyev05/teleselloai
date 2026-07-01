@@ -26,3 +26,23 @@ export type ChatMessage = {
   audio_path: string | null;
   created_at: string;
 };
+
+export type FAQItem = {
+  question: string;
+  answer: string;
+};
+
+export type AISettings = {
+  business_name: string;
+  business_description: string;
+  services: string;
+  pricing: string;
+  target_customers: string;
+  tone: string;
+  languages: string;
+  required_lead_fields: string;
+  forbidden_topics: string;
+  escalation_rules: string;
+  custom_instructions: string;
+  faq: FAQItem[];
+};

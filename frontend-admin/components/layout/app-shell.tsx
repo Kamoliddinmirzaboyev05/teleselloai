@@ -1,12 +1,14 @@
 "use client";
 
-import { Bot, LayoutDashboard, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Bot, LayoutDashboard, LogOut, SlidersHorizontal } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { clearToken } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   function logout() {
     clearToken();
@@ -19,8 +21,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mb-6 flex h-9 w-9 items-center justify-center rounded bg-primary text-primary-foreground">
           <Bot className="h-5 w-5" />
         </div>
-        <button className="flex h-9 w-9 items-center justify-center rounded text-primary" title="Dashboard">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded",
+            pathname === "/dashboard" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
+          )}
+          title="Dashboard"
+        >
           <LayoutDashboard className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => router.push("/ai-settings")}
+          className={cn(
+            "mt-2 flex h-9 w-9 items-center justify-center rounded",
+            pathname === "/ai-settings" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
+          )}
+          title="AI Sozlamalar"
+        >
+          <SlidersHorizontal className="h-5 w-5" />
         </button>
         <button
           onClick={logout}
