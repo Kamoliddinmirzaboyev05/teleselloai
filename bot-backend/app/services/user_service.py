@@ -144,3 +144,10 @@ async def authenticate_user(session: AsyncSession, username: str, password: str)
     if not verify_password(password, user.password_hash):
         return None
     return user
+
+
+async def change_password(session: AsyncSession, user: User, current_password: str, new_password: str) -> None:
+    if not verify_password(current_password, user.password_hash):
+        raise ValueError("Current password is incorrect")
+    user.password_hash = hash_password(new_password)
+    await session.commit()

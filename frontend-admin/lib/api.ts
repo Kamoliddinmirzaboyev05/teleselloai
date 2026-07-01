@@ -29,6 +29,13 @@ export function fetchMe() {
   return request<CurrentUser>("/api/auth/me");
 }
 
+export function changePassword(payload: { current_password: string; new_password: string }) {
+  return request<{ status: string }>("/api/auth/password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function fetchLeads() {
   return request<Lead[]>("/api/leads");
 }
