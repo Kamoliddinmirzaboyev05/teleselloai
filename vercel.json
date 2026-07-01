@@ -1,7 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd frontend-admin && npm ci",
-  "buildCommand": "cd frontend-admin && npm run build",
+  "installCommand": "npm --prefix frontend-admin ci",
+  "buildCommand": "npm --prefix frontend-admin run build",
+  "env": {
+    "NODE_VERSION": "22"
+  },
   "outputDirectory": "frontend-admin/.next"
 }
