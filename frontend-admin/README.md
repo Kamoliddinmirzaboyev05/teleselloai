@@ -1,6 +1,6 @@
 # Frontend Admin
 
-Next.js CRM admin panel for Telegram AI Sales Agent.
+Vite React CRM admin panel for Telegram AI Sales Agent.
 
 ## Setup
 
@@ -10,15 +10,15 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:5173`.
 
-The frontend expects the backend at `NEXT_PUBLIC_API_URL`, defaulting to
+The frontend expects the backend at `VITE_API_URL`, defaulting to
 `https://teleselloai-api.159.223.151.104.sslip.io`.
 
 For Vercel, set:
 
 ```env
-NEXT_PUBLIC_API_URL=https://teleselloai-api.159.223.151.104.sslip.io
+VITE_API_URL=https://teleselloai-api.159.223.151.104.sslip.io
 ```
 
 Login username and password are configured in the backend `.env` with

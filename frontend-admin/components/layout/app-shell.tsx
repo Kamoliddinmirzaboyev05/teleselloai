@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bot, LayoutDashboard, LogOut, Send, Settings, SlidersHorizontal, Users } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { fetchMe } from "@/lib/api";
 import { clearToken } from "@/lib/auth";
@@ -10,8 +10,8 @@ import type { CurrentUser } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [user, setUser] = useState<CurrentUser | null>(null);
 
   useEffect(() => {
@@ -19,13 +19,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .then(setUser)
       .catch(() => {
         clearToken();
-        router.push("/login");
+        navigate("/login");
       });
-  }, [router]);
+  }, [navigate]);
 
   function logout() {
     clearToken();
-    router.push("/login");
+    navigate("/login");
   }
 
   return (
@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Bot className="h-5 w-5" />
         </div>
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={() => navigate("/dashboard")}
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded",
             pathname === "/dashboard" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <LayoutDashboard className="h-5 w-5" />
         </button>
         <button
-          onClick={() => router.push("/ai-settings")}
+          onClick={() => navigate("/ai-settings")}
           className={cn(
             "mt-2 flex h-9 w-9 items-center justify-center rounded",
             pathname === "/ai-settings" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SlidersHorizontal className="h-5 w-5" />
         </button>
         <button
-          onClick={() => router.push("/telegram")}
+          onClick={() => navigate("/telegram")}
           className={cn(
             "mt-2 flex h-9 w-9 items-center justify-center rounded",
             pathname === "/telegram" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
@@ -66,7 +66,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </button>
         {user?.role === "superadmin" ? (
           <button
-            onClick={() => router.push("/admins")}
+            onClick={() => navigate("/admins")}
             className={cn(
               "mt-2 flex h-9 w-9 items-center justify-center rounded",
               pathname === "/admins" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         ) : null}
         <button
-          onClick={() => router.push("/settings")}
+          onClick={() => navigate("/settings")}
           className={cn(
             "mt-2 flex h-9 w-9 items-center justify-center rounded",
             pathname === "/settings" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",

@@ -1,25 +1,24 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PauseCircle, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
-import { AppShell } from "@/components/layout/app-shell";
-import { KanbanBoard } from "@/components/kanban/kanban-board";
 import { ChatPanel } from "@/components/chat/chat-panel";
+import { KanbanBoard } from "@/components/kanban/kanban-board";
+import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { fetchAIPauseStatus, fetchLeadChat, fetchLeads, updateAIPauseStatus, updateLead } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { ChatMessage, Lead, LeadStatus } from "@/lib/types";
 
 export default function DashboardPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiPaused, setAiPaused] = useState(false);
   const [pauseSaving, setPauseSaving] = useState(false);
+  const [pauseMessage, setPauseMessage] = useState("");
 
   const selectedLead = useMemo(
     () => leads.find((lead) => lead.id === selectedLeadId) ?? leads[0],
@@ -28,7 +27,7 @@ export default function DashboardPage() {
 
   const loadLeads = useCallback(async () => {
     if (!getToken()) {
-      router.push("/login");
+      navigate("/login");
       return;
     }
     setLoading(true);
@@ -42,7 +41,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, selectedLeadId]);
+  }, [navigate, selectedLeadId]);
 
   const loadChat = useCallback(async (leadId: string) => {
     setMessages(await fetchLeadChat(leadId));
@@ -60,9 +59,12 @@ export default function DashboardPage() {
 
   async function onTogglePause() {
     setPauseSaving(true);
+    setPauseMessage("");
     try {
       const updated = await updateAIPauseStatus({ ai_paused: !aiPaused });
       setAiPaused(updated.ai_paused);
+    } catch {
+      setPauseMessage("Global AI pause uchun backendni yangilash kerak.");
     } finally {
       setPauseSaving(false);
     }
@@ -97,6 +99,7 @@ export default function DashboardPage() {
             </Button>
           </div>
         </header>
+        {pauseMessage ? <p className="border-b border-amber-200 bg-amber-50 px-5 py-2 text-sm text-amber-800">{pauseMessage}</p> : null}
         <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
           <section className="overflow-auto p-4">
             <KanbanBoard

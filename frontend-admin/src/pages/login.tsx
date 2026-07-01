@@ -1,17 +1,15 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { login } from "@/lib/api";
 import { getApiBaseUrl, saveApiBaseUrl } from "@/lib/api-config";
 import { saveToken } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
@@ -30,7 +28,7 @@ export default function LoginPage() {
     try {
       const response = await login(username, password);
       saveToken(response.access_token);
-      router.push("/dashboard");
+      navigate("/dashboard");
     } catch {
       setError("Login yoki parol noto'g'ri");
     } finally {

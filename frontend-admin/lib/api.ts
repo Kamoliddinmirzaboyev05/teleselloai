@@ -63,7 +63,21 @@ export function updateAISettings(settings: AISettings) {
 }
 
 export function fetchAIPauseStatus() {
-  return request<AIPauseStatus>("/api/ai-settings/pause");
+  const token = getToken();
+  return fetch(`${getApiBaseUrl()}/api/ai-settings/pause`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  }).then((response) => {
+    if (response.status === 404) {
+      return { ai_paused: false };
+    }
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+    return response.json() as Promise<AIPauseStatus>;
+  });
 }
 
 export function updateAIPauseStatus(payload: AIPauseStatus) {

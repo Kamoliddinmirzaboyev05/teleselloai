@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw, ShieldCheck, UserPlus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
@@ -12,7 +10,7 @@ import { getToken } from "@/lib/auth";
 import type { AdminUser } from "@/lib/types";
 
 export default function AdminsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
@@ -23,7 +21,7 @@ export default function AdminsPage() {
 
   const loadUsers = useCallback(async () => {
     if (!getToken()) {
-      router.push("/login");
+      navigate("/login");
       return;
     }
     setLoading(true);
@@ -31,7 +29,7 @@ export default function AdminsPage() {
     try {
       const me = await fetchMe();
       if (me.role !== "superadmin") {
-        router.push("/dashboard");
+        navigate("/dashboard");
         return;
       }
       setUsers(await fetchUsers());
@@ -40,7 +38,7 @@ export default function AdminsPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [navigate]);
 
   useEffect(() => {
     void loadUsers();

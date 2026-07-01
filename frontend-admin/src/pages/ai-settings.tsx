@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
@@ -40,7 +38,7 @@ const textareas: Array<{ key: TextAISettingsKey; label: string; rows?: number }>
 ];
 
 export default function AISettingsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<AISettings>(emptySettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,7 +46,7 @@ export default function AISettingsPage() {
 
   const loadSettings = useCallback(async () => {
     if (!getToken()) {
-      router.push("/login");
+      navigate("/login");
       return;
     }
     setLoading(true);
@@ -57,7 +55,7 @@ export default function AISettingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [navigate]);
 
   useEffect(() => {
     void loadSettings();

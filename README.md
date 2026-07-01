@@ -5,7 +5,7 @@ Docker-ready MVP scaffold for a Telegram AI sales assistant and CRM admin panel.
 ## Structure
 
 - `bot-backend/`: Python FastAPI API, Telethon userbot worker, PostgreSQL models, Redis config, Groq integration, Alembic migrations.
-- `frontend-admin/`: Next.js admin CRM with login, Kanban dashboard, chat detail panel, and AI settings editor.
+- `frontend-admin/`: Vite React admin CRM with login, Kanban dashboard, chat detail panel, Telegram connection, and AI settings editor.
 
 Supabase is not used. The stack is designed for VPS deployment with Docker Compose.
 
@@ -45,16 +45,16 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:5173`.
 
-The login request goes to `NEXT_PUBLIC_API_URL/api/auth/login`. Production
+The login request goes to `VITE_API_URL/api/auth/login`. Production
 frontend should use `https://teleselloai-api.159.223.151.104.sslip.io`.
 The frontend also lets the admin edit the backend base URL from the login page
-and from `/settings`; that browser-specific value overrides `NEXT_PUBLIC_API_URL`.
+and from `/settings`; that browser-specific value overrides `VITE_API_URL`.
 
 Admin login credentials are checked by the backend env values
 `ADMIN_USERNAME` and `ADMIN_PASSWORD`. The frontend only needs
-`NEXT_PUBLIC_API_URL`.
+`VITE_API_URL`.
 
 Use `/ai-settings` in the admin panel to teach the assistant about the
 business, services, prices, tone, forbidden topics, escalation rules, and FAQ

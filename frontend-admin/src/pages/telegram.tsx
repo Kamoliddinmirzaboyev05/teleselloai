@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { KeyRound, Send, ShieldCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
@@ -22,7 +20,7 @@ const emptyAccount: TelegramAccount = {
 };
 
 export default function TelegramPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [account, setAccount] = useState<TelegramAccount>(emptyAccount);
   const [apiHash, setApiHash] = useState("");
   const [code, setCode] = useState("");
@@ -33,7 +31,7 @@ export default function TelegramPage() {
 
   const loadAccount = useCallback(async () => {
     if (!getToken()) {
-      router.push("/login");
+      navigate("/login");
       return;
     }
     setLoading(true);
@@ -42,7 +40,7 @@ export default function TelegramPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [navigate]);
 
   useEffect(() => {
     void loadAccount();
