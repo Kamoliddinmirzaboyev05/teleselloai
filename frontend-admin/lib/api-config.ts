@@ -1,9 +1,13 @@
 const API_BASE_URL_KEY = "telegram_ai_sales_api_base_url";
+export const SERVER_API_BASE_URL = "https://teleselloai-api.159.223.151.104.sslip.io";
 
-export const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? SERVER_API_BASE_URL;
 
-function normalizeBaseUrl(value: string) {
-  return value.trim().replace(/\/+$/, "");
+export function normalizeBaseUrl(value: string) {
+  return value
+    .trim()
+    .replace(/\/docs\/?$/i, "")
+    .replace(/\/+$/, "");
 }
 
 export function getApiBaseUrl() {

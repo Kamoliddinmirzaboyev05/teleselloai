@@ -6,7 +6,7 @@ import { CheckCircle2, Save } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getApiBaseUrl, saveApiBaseUrl } from "@/lib/api-config";
+import { getApiBaseUrl, normalizeBaseUrl, saveApiBaseUrl } from "@/lib/api-config";
 
 export default function SettingsPage() {
   const [baseUrl, setBaseUrl] = useState("");
@@ -27,7 +27,7 @@ export default function SettingsPage() {
     setChecking(true);
     setMessage("");
     try {
-      const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/health`);
+      const response = await fetch(`${normalizeBaseUrl(baseUrl)}/api/health`);
       if (!response.ok) {
         throw new Error("Health check failed");
       }

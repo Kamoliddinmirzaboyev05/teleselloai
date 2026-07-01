@@ -47,7 +47,8 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-The login request goes to `NEXT_PUBLIC_API_URL/api/auth/login`.
+The login request goes to `NEXT_PUBLIC_API_URL/api/auth/login`. Production
+frontend should use `https://teleselloai-api.159.223.151.104.sslip.io`.
 The frontend also lets the admin edit the backend base URL from the login page
 and from `/settings`; that browser-specific value overrides `NEXT_PUBLIC_API_URL`.
 
