@@ -63,6 +63,6 @@
 
 - [x] Run backend tests and import compile.
 - [x] Run frontend lint and build.
-- [ ] Commit and push to GitHub.
-- [ ] Deploy backend to the VPS.
-- [ ] Verify health, auth, PostgreSQL, Redis, Alembic, worker, and new APIs.
+- [x] Commit and push to GitHub.
+- [x] Deploy backend to the VPS.
+- [x] Verify health, auth, PostgreSQL, Redis, Alembic, worker, and new APIs.
