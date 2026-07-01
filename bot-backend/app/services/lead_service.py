@@ -66,13 +66,19 @@ async def find_or_create_lead(
     return lead
 
 
-async def list_leads(session: AsyncSession) -> list[Lead]:
-    result = await session.execute(select(Lead).order_by(Lead.updated_at.desc()))
+async def list_leads(session: AsyncSession, account_id: uuid.UUID | None = None) -> list[Lead]:
+    statement = select(Lead).order_by(Lead.updated_at.desc())
+    if account_id:
+        statement = statement.where(Lead.account_id == account_id)
+    result = await session.execute(statement)
     return list(result.scalars().all())
 
 
-async def get_lead(session: AsyncSession, lead_id: uuid.UUID) -> Lead | None:
-    result = await session.execute(select(Lead).where(Lead.id == lead_id))
+async def get_lead(session: AsyncSession, lead_id: uuid.UUID, account_id: uuid.UUID | None = None) -> Lead | None:
+    statement = select(Lead).where(Lead.id == lead_id)
+    if account_id:
+        statement = statement.where(Lead.account_id == account_id)
+    result = await session.execute(statement)
     return result.scalar_one_or_none()
 
 

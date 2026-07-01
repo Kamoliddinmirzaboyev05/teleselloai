@@ -41,7 +41,7 @@ class TelegramConversationService:
             return None
 
         history = await chat_service.get_history(session, lead.id, limit=10)
-        ai_settings = await ai_settings_service.get_ai_settings(session)
+        ai_settings = await ai_settings_service.get_ai_settings(session, lead.account_id)
         raw_reply = await self.groq.generate_reply(build_messages(history, ai_settings))
         clean_reply, captured = parse_ai_response(raw_reply)
         if captured:

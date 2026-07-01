@@ -1,5 +1,5 @@
 import { getToken } from "@/lib/auth";
-import type { AISettings, ChatMessage, Lead, LeadStatus } from "@/lib/types";
+import type { AdminUser, AISettings, ChatMessage, CurrentUser, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -20,10 +20,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export function login(username: string, password: string) {
-  return request<{ access_token: string; token_type: string }>("/api/auth/login", {
+  return request<{ access_token: string; token_type: string; user: CurrentUser }>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ username, password }),
   });
+}
+
+export function fetchMe() {
+  return request<CurrentUser>("/api/auth/me");
 }
 
 export function fetchLeads() {
@@ -49,5 +53,45 @@ export function updateAISettings(settings: AISettings) {
   return request<AISettings>("/api/ai-settings", {
     method: "PUT",
     body: JSON.stringify(settings),
+  });
+}
+
+export function fetchUsers() {
+  return request<AdminUser[]>("/api/users");
+}
+
+export function createUser(payload: { username: string; password: string; full_name?: string; role?: "admin" | "superadmin" }) {
+  return request<AdminUser>("/api/users", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateUser(userId: string, payload: Partial<{ password: string; full_name: string | null; role: "admin" | "superadmin"; is_active: boolean }>) {
+  return request<AdminUser>(`/api/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function fetchTelegramAccount() {
+  return request<TelegramAccount>("/api/telegram-account");
+}
+
+export function updateTelegramAccount(payload: Partial<{ name: string; telegram_api_id: string; telegram_api_hash: string; telegram_phone: string }>) {
+  return request<TelegramAccount>("/api/telegram-account", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function startTelegramLogin() {
+  return request<{ status: string; message: string }>("/api/telegram-account/login/start", { method: "POST" });
+}
+
+export function verifyTelegramLogin(payload: { code: string; password?: string }) {
+  return request<{ status: string; message: string; requires_password: boolean }>("/api/telegram-account/login/verify", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }

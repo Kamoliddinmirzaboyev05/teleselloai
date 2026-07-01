@@ -27,6 +27,33 @@ export type ChatMessage = {
   created_at: string;
 };
 
+export type CurrentUser = {
+  id: string;
+  username: string;
+  role: "admin" | "superadmin";
+  account_id: string;
+};
+
+export type AdminUser = {
+  id: string;
+  username: string;
+  full_name: string | null;
+  role: "admin" | "superadmin";
+  account_id: string;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type TelegramAccount = {
+  account_id: string;
+  name: string;
+  telegram_api_id: string;
+  telegram_api_hash_set: boolean;
+  telegram_phone: string;
+  telegram_status: string;
+  telegram_last_error: string | null;
+};
+
 export type FAQItem = {
   question: string;
   answer: string;

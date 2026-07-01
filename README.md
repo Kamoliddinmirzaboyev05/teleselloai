@@ -57,6 +57,12 @@ Use `/ai-settings` in the admin panel to teach the assistant about the
 business, services, prices, tone, forbidden topics, escalation rules, and FAQ
 answers. Saved settings are used by the bot on the next customer message.
 
+Use `/admins` as the superadmin to create and block admins. Use `/telegram` as
+any admin to connect that admin's Telegram account with `api_id`, `api_hash`,
+phone, Telegram code, and optional 2FA password. Regular admins can only see
+their own leads, AI settings, and Telegram connection. Superadmin can see all
+leads and manage users.
+
 ## Local Backend Tests
 
 ```bash
@@ -77,6 +83,14 @@ pytest
 - `GET /api/leads/{lead_id}/chat`
 - `GET /api/ai-settings`
 - `PUT /api/ai-settings`
+- `GET /api/auth/me`
+- `GET /api/users`
+- `POST /api/users`
+- `PATCH /api/users/{user_id}`
+- `GET /api/telegram-account`
+- `PUT /api/telegram-account`
+- `POST /api/telegram-account/login/start`
+- `POST /api/telegram-account/login/verify`
 
 ## Notes
 

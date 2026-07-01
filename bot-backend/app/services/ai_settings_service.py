@@ -1,5 +1,6 @@
 import json
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,9 +37,12 @@ def normalize_ai_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
     return data
 
 
-async def get_ai_settings(session: AsyncSession) -> dict[str, Any]:
-    result = await session.execute(select(Setting).where(Setting.account_id.is_(None), Setting.key == AI_SETTINGS_KEY))
+async def get_ai_settings(session: AsyncSession, account_id: UUID | None = None) -> dict[str, Any]:
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == AI_SETTINGS_KEY))
     setting = result.scalar_one_or_none()
+    if not setting and account_id is not None:
+        result = await session.execute(select(Setting).where(Setting.account_id.is_(None), Setting.key == AI_SETTINGS_KEY))
+        setting = result.scalar_one_or_none()
     if not setting:
         return dict(DEFAULT_AI_SETTINGS)
     try:
@@ -48,14 +52,14 @@ async def get_ai_settings(session: AsyncSession) -> dict[str, Any]:
     return normalize_ai_settings(raw)
 
 
-async def update_ai_settings(session: AsyncSession, payload: dict[str, Any]) -> dict[str, Any]:
+async def update_ai_settings(session: AsyncSession, payload: dict[str, Any], account_id: UUID | None = None) -> dict[str, Any]:
     data = normalize_ai_settings(payload)
-    result = await session.execute(select(Setting).where(Setting.account_id.is_(None), Setting.key == AI_SETTINGS_KEY))
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == AI_SETTINGS_KEY))
     setting = result.scalar_one_or_none()
     encoded = json.dumps(data, ensure_ascii=False)
     if setting:
         setting.value = encoded
     else:
-        session.add(Setting(account_id=None, key=AI_SETTINGS_KEY, value=encoded))
+        session.add(Setting(account_id=account_id, key=AI_SETTINGS_KEY, value=encoded))
     await session.commit()
     return data

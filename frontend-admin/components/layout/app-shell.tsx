@@ -1,14 +1,27 @@
 "use client";
 
-import { Bot, LayoutDashboard, LogOut, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bot, LayoutDashboard, LogOut, Send, SlidersHorizontal, Users } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
+import { fetchMe } from "@/lib/api";
 import { clearToken } from "@/lib/auth";
+import type { CurrentUser } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [user, setUser] = useState<CurrentUser | null>(null);
+
+  useEffect(() => {
+    void fetchMe()
+      .then(setUser)
+      .catch(() => {
+        clearToken();
+        router.push("/login");
+      });
+  }, [router]);
 
   function logout() {
     clearToken();
@@ -41,6 +54,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           <SlidersHorizontal className="h-5 w-5" />
         </button>
+        <button
+          onClick={() => router.push("/telegram")}
+          className={cn(
+            "mt-2 flex h-9 w-9 items-center justify-center rounded",
+            pathname === "/telegram" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
+          )}
+          title="Telegram ulash"
+        >
+          <Send className="h-5 w-5" />
+        </button>
+        {user?.role === "superadmin" ? (
+          <button
+            onClick={() => router.push("/admins")}
+            className={cn(
+              "mt-2 flex h-9 w-9 items-center justify-center rounded",
+              pathname === "/admins" ? "bg-teal-50 text-primary" : "text-muted-foreground hover:bg-muted",
+            )}
+            title="Adminlar"
+          >
+            <Users className="h-5 w-5" />
+          </button>
+        ) : null}
         <button
           onClick={logout}
           className="mt-auto flex h-9 w-9 items-center justify-center rounded text-muted-foreground hover:bg-muted"

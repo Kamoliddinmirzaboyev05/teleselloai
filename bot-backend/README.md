@@ -43,6 +43,8 @@ curl http://localhost:8000/api/health
 ```
 
 Admin login uses `ADMIN_USERNAME` and `ADMIN_PASSWORD` from `.env`.
+The first successful login creates the database superadmin user from those env
+values. After that, users are managed from the admin panel.
 After login, the admin panel can save AI training data through:
 
 ```bash
@@ -52,6 +54,23 @@ PUT /api/ai-settings
 
 The bot worker loads these settings before each AI reply, so changes apply to
 new customer messages without restarting the worker.
+
+Superadmin endpoints:
+
+```bash
+GET /api/users
+POST /api/users
+PATCH /api/users/{user_id}
+```
+
+Telegram account endpoints:
+
+```bash
+GET /api/telegram-account
+PUT /api/telegram-account
+POST /api/telegram-account/login/start
+POST /api/telegram-account/login/verify
+```
 
 ## Local Development
 

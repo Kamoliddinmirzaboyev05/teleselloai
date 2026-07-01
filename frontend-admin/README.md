@@ -26,6 +26,9 @@ Login username and password are configured in the backend `.env` with
 
 The AI training page is available at `/ai-settings` after login.
 
+Superadmins can manage users at `/admins`. Every admin can connect their own
+Telegram account at `/telegram`.
+
 ## Scripts
 
 ```bash

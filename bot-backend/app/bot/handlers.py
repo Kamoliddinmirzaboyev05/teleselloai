@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import UUID
 
 from telethon import events
 
@@ -12,18 +13,29 @@ conversation_service = TelegramConversationService()
 
 
 async def handle_new_message(event: events.NewMessage.Event) -> None:
+    async with AsyncSessionLocal() as session:
+        account = await lead_service.get_or_create_default_account(session)
+    await handle_account_message(event, account.id)
+
+
+def build_new_message_handler(account_id: UUID):
+    async def _handler(event: events.NewMessage.Event) -> None:
+        await handle_account_message(event, account_id)
+
+    return _handler
+
+
+async def handle_account_message(event: events.NewMessage.Event, account_id: UUID) -> None:
     if not event.is_private:
         return
 
     settings = get_settings()
     async with AsyncSessionLocal() as session:
         try:
-            account = await lead_service.get_or_create_default_account(session)
-
             if event.out:
                 lead = await lead_service.find_lead_by_telegram_id(
                     session,
-                    account_id=account.id,
+                    account_id=account_id,
                     telegram_id=int(event.chat_id),
                 )
                 if lead:
@@ -48,7 +60,7 @@ async def handle_new_message(event: events.NewMessage.Event) -> None:
             try:
                 allowed = await redis_service.allow_message(
                     redis,
-                    f"telegram:{telegram_id}",
+                    f"telegram:{account_id}:{telegram_id}",
                     limit=settings.message_rate_limit_per_minute,
                 )
                 if not allowed:
@@ -60,7 +72,7 @@ async def handle_new_message(event: events.NewMessage.Event) -> None:
 
             lead = await lead_service.find_or_create_lead(
                 session,
-                account_id=account.id,
+                account_id=account_id,
                 telegram_id=telegram_id,
                 telegram_username=getattr(sender, "username", None),
                 first_name=getattr(sender, "first_name", None),

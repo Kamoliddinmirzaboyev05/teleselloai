@@ -4,5 +4,6 @@ from app.models.chat_history import ChatHistory
 from app.models.error_log import ErrorLog
 from app.models.lead import Lead
 from app.models.setting import Setting
+from app.models.user import User
 
-__all__ = ["Account", "Base", "ChatHistory", "ErrorLog", "Lead", "Setting"]
+__all__ = ["Account", "Base", "ChatHistory", "ErrorLog", "Lead", "Setting", "User"]
