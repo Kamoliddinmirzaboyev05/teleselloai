@@ -1,7 +1,13 @@
 import json
+import uuid
+from types import SimpleNamespace
 
+import pytest
+
+from app.services import telegram_service
 from app.services.ai_settings_service import DEFAULT_AI_SETTINGS, normalize_ai_settings
 from app.services.prompt_service import build_system_prompt
+from app.services.telegram_service import TelegramConversationService
 
 
 def test_normalize_ai_settings_keeps_known_fields_and_faq_pairs():
@@ -44,3 +50,40 @@ def test_build_system_prompt_includes_business_settings_and_data_capture_contrac
     assert "Demo bormi?" in prompt
     assert "DATA_CAPTURE" in prompt
     assert json.dumps({"first_name": None, "phone": None, "product_interest": None, "status": "new"}) in prompt
+
+
+@pytest.mark.asyncio
+async def test_global_ai_pause_skips_ai_reply(monkeypatch):
+    messages = []
+    groq_calls = []
+
+    async def add_message(_session, **payload):
+        messages.append(payload)
+
+    async def get_history(_session, _lead_id, limit=10):
+        return []
+
+    async def get_ai_pause_status(_session, _account_id):
+        return True
+
+    async def get_ai_settings(_session, _account_id):
+        return dict(DEFAULT_AI_SETTINGS)
+
+    class FakeGroq:
+        async def generate_reply(self, _messages):
+            groq_calls.append("called")
+            return "Bu javob ketmasligi kerak"
+
+    monkeypatch.setattr(telegram_service.chat_service, "add_message", add_message)
+    monkeypatch.setattr(telegram_service.chat_service, "get_history", get_history)
+    monkeypatch.setattr(telegram_service.ai_settings_service, "get_ai_settings", get_ai_settings)
+    monkeypatch.setattr(telegram_service.ai_settings_service, "get_ai_pause_status", get_ai_pause_status, raising=False)
+
+    lead = SimpleNamespace(id=uuid.uuid4(), account_id=uuid.uuid4(), ai_paused=False)
+    service = TelegramConversationService(groq_service=FakeGroq())
+
+    reply = await service.handle_customer_text(object(), lead, 101, "salom")
+
+    assert reply is None
+    assert groq_calls == []
+    assert [message["role"] for message in messages] == ["user"]

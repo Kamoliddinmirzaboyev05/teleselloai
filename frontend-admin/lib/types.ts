@@ -73,3 +73,7 @@ export type AISettings = {
   custom_instructions: string;
   faq: FAQItem[];
 };
+
+export type AIPauseStatus = {
+  ai_paused: boolean;
+};

@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getToken } from "@/lib/auth";
-import type { AdminUser, AISettings, ChatMessage, CurrentUser, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
+import type { AdminUser, AIPauseStatus, AISettings, ChatMessage, CurrentUser, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
@@ -59,6 +59,17 @@ export function updateAISettings(settings: AISettings) {
   return request<AISettings>("/api/ai-settings", {
     method: "PUT",
     body: JSON.stringify(settings),
+  });
+}
+
+export function fetchAIPauseStatus() {
+  return request<AIPauseStatus>("/api/ai-settings/pause");
+}
+
+export function updateAIPauseStatus(payload: AIPauseStatus) {
+  return request<AIPauseStatus>("/api/ai-settings/pause", {
+    method: "PUT",
+    body: JSON.stringify(payload),
   });
 }
 

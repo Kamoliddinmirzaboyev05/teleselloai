@@ -37,7 +37,7 @@ class TelegramConversationService:
             is_audio=is_audio,
             audio_path=audio_path,
         )
-        if lead.ai_paused:
+        if lead.ai_paused or await ai_settings_service.get_ai_pause_status(session, lead.account_id):
             return None
 
         history = await chat_service.get_history(session, lead.id, limit=10)

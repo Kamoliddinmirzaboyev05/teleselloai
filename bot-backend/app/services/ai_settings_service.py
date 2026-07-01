@@ -9,6 +9,7 @@ from app.models.setting import Setting
 from app.schemas.ai_settings import AISettings
 
 AI_SETTINGS_KEY = "ai_settings"
+AI_PAUSE_KEY = "ai_paused"
 
 DEFAULT_AI_SETTINGS = AISettings().model_dump()
 
@@ -63,3 +64,31 @@ async def update_ai_settings(session: AsyncSession, payload: dict[str, Any], acc
         session.add(Setting(account_id=account_id, key=AI_SETTINGS_KEY, value=encoded))
     await session.commit()
     return data
+
+
+def parse_ai_pause_status(value: str | None) -> bool:
+    if not value:
+        return False
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError:
+        return value.strip().lower() == "true"
+    return bool(parsed)
+
+
+async def get_ai_pause_status(session: AsyncSession, account_id: UUID | None = None) -> bool:
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == AI_PAUSE_KEY))
+    setting = result.scalar_one_or_none()
+    return parse_ai_pause_status(setting.value if setting else None)
+
+
+async def update_ai_pause_status(session: AsyncSession, ai_paused: bool, account_id: UUID | None = None) -> bool:
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == AI_PAUSE_KEY))
+    setting = result.scalar_one_or_none()
+    encoded = json.dumps(bool(ai_paused))
+    if setting:
+        setting.value = encoded
+    else:
+        session.add(Setting(account_id=account_id, key=AI_PAUSE_KEY, value=encoded))
+    await session.commit()
+    return bool(ai_paused)

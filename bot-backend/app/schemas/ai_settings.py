@@ -19,3 +19,7 @@ class AISettings(BaseModel):
     escalation_rules: str = ""
     custom_instructions: str = ""
     faq: list[FAQItem] = Field(default_factory=list)
+
+
+class AIPauseStatus(BaseModel):
+    ai_paused: bool = False

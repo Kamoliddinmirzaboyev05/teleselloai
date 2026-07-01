@@ -8,7 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { Button } from "@/components/ui/button";
-import { fetchLeadChat, fetchLeads, updateLead } from "@/lib/api";
+import { fetchAIPauseStatus, fetchLeadChat, fetchLeads, updateAIPauseStatus, updateLead } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { ChatMessage, Lead, LeadStatus } from "@/lib/types";
 
@@ -18,6 +18,8 @@ export default function DashboardPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiPaused, setAiPaused] = useState(false);
+  const [pauseSaving, setPauseSaving] = useState(false);
 
   const selectedLead = useMemo(
     () => leads.find((lead) => lead.id === selectedLeadId) ?? leads[0],
@@ -31,8 +33,9 @@ export default function DashboardPage() {
     }
     setLoading(true);
     try {
-      const data = await fetchLeads();
+      const [data, pauseStatus] = await Promise.all([fetchLeads(), fetchAIPauseStatus()]);
       setLeads(data);
+      setAiPaused(pauseStatus.ai_paused);
       if (!selectedLeadId && data[0]) {
         setSelectedLeadId(data[0].id);
       }
@@ -55,9 +58,14 @@ export default function DashboardPage() {
     setLeads((current) => current.map((item) => (item.id === updated.id ? updated : item)));
   }
 
-  async function onTogglePause(lead: Lead) {
-    const updated = await updateLead(lead.id, { ai_paused: !lead.ai_paused });
-    setLeads((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+  async function onTogglePause() {
+    setPauseSaving(true);
+    try {
+      const updated = await updateAIPauseStatus({ ai_paused: !aiPaused });
+      setAiPaused(updated.ai_paused);
+    } finally {
+      setPauseSaving(false);
+    }
   }
 
   useEffect(() => {
@@ -79,12 +87,10 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">{leads.length} ta lead</p>
           </div>
           <div className="flex items-center gap-2">
-            {selectedLead ? (
-              <Button variant="secondary" onClick={() => onTogglePause(selectedLead)}>
-                <PauseCircle className="h-4 w-4" />
-                {selectedLead.ai_paused ? "AI yoqish" : "AI pause"}
-              </Button>
-            ) : null}
+            <Button variant={aiPaused ? "primary" : "secondary"} onClick={onTogglePause} disabled={pauseSaving}>
+              <PauseCircle className="h-4 w-4" />
+              {aiPaused ? "AI ni yoqish" : "AI ni o'chirish"}
+            </Button>
             <Button variant="outline" onClick={loadLeads}>
               <RefreshCw className="h-4 w-4" />
               Yangilash
@@ -101,7 +107,7 @@ export default function DashboardPage() {
               onChangeStatus={onChangeStatus}
             />
           </section>
-          <ChatPanel lead={selectedLead ?? null} messages={messages} onChangeStatus={onChangeStatus} />
+          <ChatPanel lead={selectedLead ?? null} messages={messages} aiPaused={aiPaused} onChangeStatus={onChangeStatus} />
         </div>
       </div>
     </AppShell>

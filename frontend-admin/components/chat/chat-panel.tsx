@@ -7,10 +7,12 @@ import { cn, formatDateTime } from "@/lib/utils";
 export function ChatPanel({
   lead,
   messages,
+  aiPaused,
   onChangeStatus,
 }: {
   lead: Lead | null;
   messages: ChatMessage[];
+  aiPaused: boolean;
   onChangeStatus: (lead: Lead, status: LeadStatus) => void;
 }) {
   if (!lead) {
@@ -42,7 +44,12 @@ export function ChatPanel({
             <option value="won">won</option>
             <option value="lost">lost</option>
           </select>
-          {lead.ai_paused ? (
+          {aiPaused ? (
+            <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">
+              <PauseCircle className="h-3.5 w-3.5" />
+              AI barcha chatlarda pause
+            </span>
+          ) : lead.ai_paused ? (
             <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">
               <PauseCircle className="h-3.5 w-3.5" />
               AI pause
