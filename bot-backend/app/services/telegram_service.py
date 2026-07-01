@@ -17,7 +17,16 @@ class TelegramConversationService:
         self.settings = get_settings()
         self.groq = groq_service or GroqService()
 
-    async def handle_customer_text(self, session: AsyncSession, lead: Lead, message_id: int | None, content: str) -> str | None:
+    async def handle_customer_text(
+        self,
+        session: AsyncSession,
+        lead: Lead,
+        message_id: int | None,
+        content: str,
+        *,
+        is_audio: bool = False,
+        audio_path: str | None = None,
+    ) -> str | None:
         lead.last_user_message_at = datetime.utcnow()
         await chat_service.add_message(
             session,
@@ -25,6 +34,8 @@ class TelegramConversationService:
             role="user",
             content=content,
             telegram_message_id=message_id,
+            is_audio=is_audio,
+            audio_path=audio_path,
         )
         if lead.ai_paused:
             return None

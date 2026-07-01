@@ -9,6 +9,7 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 revision: str = "202607010001"
 down_revision: str | None = None
@@ -33,7 +34,7 @@ def upgrade() -> None:
         "error_logs",
         sa.Column("source", sa.String(length=255), nullable=False),
         sa.Column("message", sa.Text(), nullable=False),
-        sa.Column("payload", sa.JSON(), nullable=True),
+        sa.Column("payload", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("id"),

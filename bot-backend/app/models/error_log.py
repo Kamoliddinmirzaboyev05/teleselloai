@@ -1,4 +1,5 @@
-from sqlalchemy import JSON, String, Text
+from sqlalchemy import String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, CreatedAtMixin, UUIDPrimaryKeyMixin
@@ -9,4 +10,4 @@ class ErrorLog(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
 
     source: Mapped[str] = mapped_column(String(255))
     message: Mapped[str] = mapped_column(Text)
-    payload: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    payload: Mapped[dict | None] = mapped_column(JSONB, nullable=True)

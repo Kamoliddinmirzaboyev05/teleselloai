@@ -32,6 +32,10 @@ Required live credentials:
 - Strong `JWT_SECRET`
 - Strong `ADMIN_PASSWORD`
 
+`BOT_WORKER_ENABLED=false` is the default so the full Compose stack can be
+smoke-tested before Telegram credentials are configured. Set it to `true` after
+`TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, and `TELEGRAM_PHONE` are filled.
+
 ## Frontend Quick Start
 
 ```bash
@@ -42,6 +46,8 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+The login request goes to `NEXT_PUBLIC_API_URL/api/auth/login`.
 
 ## Local Backend Tests
 

@@ -39,8 +39,8 @@ services:
       - .env
     command: python -m app.bot.worker
     volumes:
-      - ./sessions:/app/sessions
-      - ./downloads:/app/downloads
+      - telegram_sessions:/app/sessions
+      - telegram_downloads:/app/downloads
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,3 +49,5 @@ services:
 
 volumes:
   postgres_data:
+  telegram_sessions:
+  telegram_downloads:

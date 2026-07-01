@@ -76,6 +76,13 @@ async def get_lead(session: AsyncSession, lead_id: uuid.UUID) -> Lead | None:
     return result.scalar_one_or_none()
 
 
+async def find_lead_by_telegram_id(session: AsyncSession, *, account_id: uuid.UUID, telegram_id: int) -> Lead | None:
+    result = await session.execute(
+        select(Lead).where(Lead.account_id == account_id, Lead.telegram_id == telegram_id)
+    )
+    return result.scalar_one_or_none()
+
+
 async def update_lead(session: AsyncSession, lead: Lead, patch: LeadUpdate | dict[str, Any]) -> Lead:
     data = patch.model_dump(exclude_unset=True) if isinstance(patch, LeadUpdate) else patch
     if "status" in data and data["status"] is not None and data["status"] not in VALID_STATUSES:

@@ -15,11 +15,13 @@ class Settings(BaseSettings):
     telegram_api_hash: str = ""
     telegram_phone: str = ""
     telegram_session_name: str = "main_session"
+    bot_worker_enabled: bool = False
     admin_telegram_ids: str = ""
     blacklist_telegram_ids: str = ""
     whitelist_telegram_ids: str = ""
     default_ai_delay_min_seconds: int = 2
     default_ai_delay_max_seconds: int = 5
+    message_rate_limit_per_minute: int = 20
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     jwt_secret: str = Field(default="change_me", min_length=8)
