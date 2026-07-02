@@ -108,6 +108,13 @@ export default function TelegramPage() {
     }
   }
 
+  const statusHint =
+    account.telegram_status === "password_required"
+      ? "Telegram 2FA parolini kiriting va yana Tasdiqlash bosing."
+      : account.telegram_status === "code_sent"
+        ? "Telegramga kelgan kodni kiriting."
+        : "";
+
   return (
     <AppShell>
       <main className="min-h-screen bg-background">
@@ -237,6 +244,7 @@ export default function TelegramPage() {
               <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <p>Status: {account.telegram_status}</p>
                 <p>API hash: {account.telegram_api_hash_set ? "saqlangan" : "kiritilmagan"}</p>
+                {statusHint ? <p className="rounded bg-amber-50 p-2 text-amber-700">{statusHint}</p> : null}
                 {account.telegram_last_error ? <p className="text-red-600">{account.telegram_last_error}</p> : null}
                 {message ? <p className="rounded bg-teal-50 p-2 text-primary">{message}</p> : null}
               </div>

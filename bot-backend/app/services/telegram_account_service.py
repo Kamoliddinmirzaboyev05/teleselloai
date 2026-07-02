@@ -99,12 +99,25 @@ async def verify_login(session: AsyncSession, account: Account, code: str, passw
 
     client = create_client_for_account(account)
     try:
-        await client.connect()
+        try:
+            await client.connect()
+        except SessionPasswordNeededError:
+            if not password:
+                account.telegram_status = "password_required"
+                account.telegram_last_error = None
+                await session.commit()
+                return False
+            await client.sign_in(password=password)
+            account.telegram_status = "connected"
+            account.telegram_last_error = None
+            await session.commit()
+            return True
         try:
             await client.sign_in(account.telegram_phone, code=code, phone_code_hash=phone_code_hash)
         except SessionPasswordNeededError:
             if not password:
                 account.telegram_status = "password_required"
+                account.telegram_last_error = None
                 await session.commit()
                 return False
             await client.sign_in(password=password)
