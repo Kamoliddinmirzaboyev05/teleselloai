@@ -98,6 +98,11 @@ async def handle_account_message(event: events.NewMessage.Event, account_id: UUI
             if not reply:
                 return
 
+            try:
+                await event.client.send_read_acknowledge(event.chat_id, message=event.message)
+            except Exception as exc:
+                await log_error(session, "telegram.read_ack", str(exc), {"chat_id": event.chat_id})
+
             async with event.client.action(event.chat_id, "typing"):
                 await conversation_service.delay_before_reply()
             await event.reply(reply)
