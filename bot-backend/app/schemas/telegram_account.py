@@ -32,3 +32,9 @@ class TelegramLoginVerifyResponse(BaseModel):
     status: str
     message: str
     requires_password: bool = False
+
+
+class TelegramChatImportResponse(BaseModel):
+    imported_chats: int = 0
+    imported_messages: int = 0
+    skipped_chats: int = 0

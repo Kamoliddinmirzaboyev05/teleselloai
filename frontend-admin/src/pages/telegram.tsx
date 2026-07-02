@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { KeyRound, Send, ShieldCheck } from "lucide-react";
+import { Download, KeyRound, Send, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { AppShell, SidebarToggleButton } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fetchTelegramAccount, startTelegramLogin, updateTelegramAccount, verifyTelegramLogin } from "@/lib/api";
+import { fetchTelegramAccount, importTelegramPrivateChats, startTelegramLogin, updateTelegramAccount, verifyTelegramLogin } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { TelegramAccount } from "@/lib/types";
 
@@ -36,6 +36,7 @@ export default function TelegramPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
+  const [importingChats, setImportingChats] = useState(false);
 
   const loadAccount = useCallback(async () => {
     if (!getToken()) {
@@ -105,6 +106,19 @@ export default function TelegramPage() {
       setMessage("Kod yoki 2FA parol noto'g'ri");
     } finally {
       setWorking(false);
+    }
+  }
+
+  async function onImportChats() {
+    setImportingChats(true);
+    setMessage("");
+    try {
+      const result = await importTelegramPrivateChats();
+      setMessage(`${result.imported_chats} ta shaxsiy chat va ${result.imported_messages} ta xabar import qilindi. Bot/group/channel: ${result.skipped_chats} ta o'tkazib yuborildi.`);
+    } catch {
+      setMessage("Chatlarni import qilib bo'lmadi. Telegram account ulanganini tekshiring.");
+    } finally {
+      setImportingChats(false);
     }
   }
 
@@ -222,6 +236,26 @@ export default function TelegramPage() {
                 Tasdiqlash
               </Button>
             </form>
+
+            <section className="rounded border border-border bg-white p-4 shadow-sm">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold">Shaxsiy chatlarni import qilish</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Ulangan Telegram accountdagi odamlar bilan shaxsiy chatlarni dashboardga olib keladi.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onImportChats}
+                  disabled={importingChats || working || account.telegram_status !== "connected"}
+                >
+                  <Download className="h-4 w-4" />
+                  {importingChats ? "Import qilinmoqda" : "Import qilish"}
+                </Button>
+              </div>
+            </section>
           </section>
 
           <aside className="space-y-4">

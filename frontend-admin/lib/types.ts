@@ -57,6 +57,12 @@ export type TelegramAccount = {
   telegram_last_error: string | null;
 };
 
+export type TelegramChatImportResult = {
+  imported_chats: number;
+  imported_messages: number;
+  skipped_chats: number;
+};
+
 export type FAQItem = {
   question: string;
   answer: string;

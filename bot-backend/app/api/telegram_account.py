@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.deps import SessionDep, require_admin
 from app.schemas.telegram_account import (
     TelegramAccountRead,
+    TelegramChatImportResponse,
     TelegramAccountUpdate,
     TelegramLoginStartResponse,
     TelegramLoginVerifyRequest,
@@ -76,3 +77,23 @@ async def verify_telegram_login(
             requires_password=True,
         )
     return TelegramLoginVerifyResponse(status="connected", message="Telegram account ulandi")
+
+
+@router.post("/dialogs/import", response_model=TelegramChatImportResponse)
+async def import_telegram_dialogs(
+    session: SessionDep,
+    current_user: CurrentUser = Depends(require_admin),
+) -> TelegramChatImportResponse:
+    account = await _current_account(session, current_user)
+    if account.telegram_status != "connected":
+        raise HTTPException(status_code=422, detail="Telegram account avval ulanishi kerak")
+    try:
+        result = await telegram_account_service.import_private_chats(session, account)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        account.telegram_status = "error"
+        account.telegram_last_error = str(exc)
+        await session.commit()
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return TelegramChatImportResponse(**result)

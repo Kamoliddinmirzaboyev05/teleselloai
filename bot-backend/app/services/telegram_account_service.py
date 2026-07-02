@@ -8,6 +8,7 @@ from app.bot.session_manager import create_client_for_account
 from app.models.account import Account
 from app.models.setting import Setting
 from app.schemas.telegram_account import TelegramAccountRead, TelegramAccountUpdate
+from app.services import chat_service, lead_service
 
 PHONE_CODE_HASH_KEY = "telegram_phone_code_hash"
 
@@ -133,3 +134,62 @@ async def verify_login(session: AsyncSession, account: Account, code: str, passw
         raise
     finally:
         await client.disconnect()
+
+
+async def import_private_chats(
+    session: AsyncSession,
+    account: Account,
+    *,
+    dialog_limit: int = 100,
+    message_limit: int = 20,
+) -> dict[str, int]:
+    client = create_client_for_account(account)
+    imported_chats = 0
+    imported_messages = 0
+    skipped_chats = 0
+    try:
+        await client.connect()
+        if hasattr(client, "is_user_authorized") and not await client.is_user_authorized():
+            raise ValueError("Telegram account avval ulanishi kerak")
+
+        async for dialog in client.iter_dialogs(limit=dialog_limit):
+            entity = getattr(dialog, "entity", None)
+            is_user_dialog = bool(getattr(dialog, "is_user", False))
+            telegram_id = getattr(entity, "id", None)
+            if not is_user_dialog or not telegram_id or bool(getattr(entity, "bot", False)):
+                skipped_chats += 1
+                continue
+
+            lead = await lead_service.find_or_create_lead(
+                session,
+                account_id=account.id,
+                telegram_id=int(telegram_id),
+                telegram_username=getattr(entity, "username", None),
+                first_name=getattr(entity, "first_name", None),
+            )
+            imported_chats += 1
+
+            async for message in client.iter_messages(entity, limit=message_limit, reverse=True):
+                content = (getattr(message, "message", None) or "").strip()
+                if not content:
+                    continue
+                role = "admin" if bool(getattr(message, "out", False)) else "user"
+                created = await chat_service.add_message_if_missing(
+                    session,
+                    lead_id=lead.id,
+                    role=role,
+                    content=content,
+                    telegram_message_id=getattr(message, "id", None),
+                )
+                if created:
+                    imported_messages += 1
+                if role == "user" and getattr(message, "date", None):
+                    lead.last_user_message_at = message.date
+            await session.commit()
+    finally:
+        await client.disconnect()
+    return {
+        "imported_chats": imported_chats,
+        "imported_messages": imported_messages,
+        "skipped_chats": skipped_chats,
+    }

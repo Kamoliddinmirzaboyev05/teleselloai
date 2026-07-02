@@ -13,6 +13,7 @@ import type {
   LeadAIFilter,
   LeadStatus,
   TelegramAccount,
+  TelegramChatImportResult,
 } from "@/lib/types";
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -170,4 +171,8 @@ export function verifyTelegramLogin(payload: { code: string; password?: string }
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function importTelegramPrivateChats() {
+  return request<TelegramChatImportResult>("/api/telegram-account/dialogs/import", { method: "POST" });
 }
