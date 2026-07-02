@@ -25,6 +25,8 @@ services:
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "127.0.0.1:18080:8000"
+    volumes:
+      - ./sessions:/app/sessions
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,7 +38,7 @@ services:
     build: .
     env_file:
       - .env
-    command: sh -c "alembic upgrade head && python -m app.bot.worker"
+    command: python -m app.bot.worker
     volumes:
       - ./sessions:/app/sessions
       - telegram_downloads:/app/downloads
