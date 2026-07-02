@@ -19,6 +19,14 @@ const emptyAccount: TelegramAccount = {
   telegram_last_error: null,
 };
 
+const setupSteps = [
+  "my.telegram.org saytiga kiring va telefon raqamingiz bilan login qiling.",
+  "API development tools bo'limidan app yarating.",
+  "api_id va api_hash qiymatlarini shu forma ichiga kiriting.",
+  "Telefon raqamingizni +998... formatida yozing, Saqlash va Kod yuborish bosing.",
+  "Telegramga kelgan kodni kiriting. Agar so'ralsa, 2FA parolni ham yozing.",
+];
+
 export default function TelegramPage() {
   const navigate = useNavigate();
   const [account, setAccount] = useState<TelegramAccount>(emptyAccount);
@@ -108,12 +116,24 @@ export default function TelegramPage() {
             <h1 className="text-lg font-semibold">Telegram ulash</h1>
             <p className="text-sm text-muted-foreground">Har admin o&apos;z Telegram accountini ulaydi</p>
           </div>
-          <span className="rounded bg-muted px-3 py-1 text-xs">{loading ? "loading" : account.telegram_status}</span>
+          <span className="rounded bg-muted px-3 py-1 text-xs">{loading ? "yuklanmoqda" : account.telegram_status}</span>
         </header>
 
         <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <section className="space-y-4">
-            <form onSubmit={onSave} className="rounded border border-border bg-white p-4">
+            {loading ? (
+              <div className="rounded border border-border bg-white p-4 shadow-sm">
+                <div className="h-5 w-44 animate-pulse rounded bg-muted" />
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="h-20 animate-pulse rounded bg-muted" />
+                  <div className="h-20 animate-pulse rounded bg-muted" />
+                  <div className="h-20 animate-pulse rounded bg-muted" />
+                  <div className="h-20 animate-pulse rounded bg-muted" />
+                </div>
+              </div>
+            ) : null}
+
+            <form onSubmit={onSave} className="rounded border border-border bg-white p-4 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
                 <KeyRound className="h-4 w-4 text-primary" />
                 <h2 className="text-sm font-semibold">Telegram credential</h2>
@@ -169,7 +189,7 @@ export default function TelegramPage() {
               </div>
             </form>
 
-            <form onSubmit={onVerify} className="rounded border border-border bg-white p-4">
+            <form onSubmit={onVerify} className="rounded border border-border bg-white p-4 shadow-sm">
               <h2 className="mb-4 text-sm font-semibold">Telegram kodni tasdiqlash</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block text-sm font-medium">
@@ -194,13 +214,29 @@ export default function TelegramPage() {
             </form>
           </section>
 
-          <aside className="h-fit rounded border border-border bg-white p-4">
-            <h2 className="text-sm font-semibold">Holat</h2>
-            <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <p>Status: {account.telegram_status}</p>
-              <p>API hash: {account.telegram_api_hash_set ? "saqlangan" : "kiritilmagan"}</p>
-              {account.telegram_last_error ? <p className="text-red-600">{account.telegram_last_error}</p> : null}
-              {message ? <p className="rounded bg-teal-50 p-2 text-primary">{message}</p> : null}
+          <aside className="space-y-4">
+            <div className="h-fit rounded border border-border bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold">Qayerdan olinadi?</h2>
+              <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
+                {setupSteps.map((step, index) => (
+                  <li key={step} className="flex gap-2">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded bg-teal-50 text-xs font-semibold text-primary">
+                      {index + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="h-fit rounded border border-border bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold">Holat</h2>
+              <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                <p>Status: {account.telegram_status}</p>
+                <p>API hash: {account.telegram_api_hash_set ? "saqlangan" : "kiritilmagan"}</p>
+                {account.telegram_last_error ? <p className="text-red-600">{account.telegram_last_error}</p> : null}
+                {message ? <p className="rounded bg-teal-50 p-2 text-primary">{message}</p> : null}
+              </div>
             </div>
           </aside>
         </div>
