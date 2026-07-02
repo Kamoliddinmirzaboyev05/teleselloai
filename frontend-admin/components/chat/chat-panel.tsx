@@ -25,8 +25,8 @@ export function ChatPanel({
   }
 
   return (
-    <aside className="flex min-h-0 flex-col border-l border-border bg-white shadow-xl lg:shadow-none">
-      <div className="border-b border-border p-4">
+    <aside className="flex h-full min-h-0 flex-col border-l border-border bg-white shadow-xl lg:shadow-none">
+      <div className="shrink-0 border-b border-border p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="truncate text-base font-semibold">{lead.first_name || "Nomsiz lead"}</h2>
@@ -94,7 +94,7 @@ export function ChatPanel({
           </Button>
         </div>
       </div>
-      <div className="flex-1 space-y-3 overflow-auto bg-background p-4">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-background p-4">
         {messages.map((message) => (
           <div key={message.id} className={cn("flex", message.role === "assistant" ? "justify-end" : "justify-start")}>
             <div

@@ -69,6 +69,7 @@ export default function DashboardPage() {
   }
 
   async function onChangeStatus(lead: Lead, status: LeadStatus) {
+    setLeads((current) => current.map((item) => (item.id === lead.id ? { ...item, status } : item)));
     const updated = await updateLead(lead.id, { status });
     setLeads((current) => current.map((item) => (item.id === updated.id ? updated : item)));
   }
@@ -110,7 +111,7 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex h-screen min-h-0 flex-col overflow-hidden">
         <header className="flex min-h-20 flex-col gap-3 border-b border-border bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <h1 className="text-lg font-semibold">CRM Dashboard</h1>
@@ -142,8 +143,8 @@ export default function DashboardPage() {
           </div>
         </header>
         {pauseMessage ? <p className="border-b border-amber-200 bg-amber-50 px-5 py-2 text-sm text-amber-800">{pauseMessage}</p> : null}
-        <div className={showChat ? "grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_440px]" : "grid flex-1 grid-cols-1 overflow-hidden"}>
-          <section className="overflow-auto bg-background p-5">
+        <div className={showChat ? "grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_440px]" : "grid min-h-0 flex-1 grid-cols-1 overflow-hidden"}>
+          <section className="min-h-0 overflow-auto bg-background p-5">
             <KanbanBoard
               leads={leads}
               loading={loading}
@@ -151,6 +152,7 @@ export default function DashboardPage() {
               onSelectLead={onSelectLead}
               onChangeStatus={onChangeStatus}
               onChangeAIFilter={onChangeLeadAIFilter}
+              onReorderLeads={setLeads}
             />
           </section>
           {showChat ? (

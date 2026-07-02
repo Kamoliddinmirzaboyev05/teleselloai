@@ -1,5 +1,5 @@
 import { CSS } from "@dnd-kit/utilities";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
 import { Bot, Clock, Phone, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,12 +19,13 @@ export function LeadCard({
   onChangeStatus: (status: LeadStatus) => void;
   onChangeAIFilter: (aiFilter: LeadAIFilter) => void;
 }) {
-  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
     id: lead.id,
-    data: { lead },
+    data: { type: "lead", lead },
   });
   const style = {
     transform: CSS.Translate.toString(transform),
+    transition,
   };
 
   return (
@@ -32,7 +33,7 @@ export function LeadCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "cursor-pointer rounded border bg-white p-3 text-sm transition hover:border-primary hover:shadow-sm",
+        "cursor-pointer rounded-lg border bg-white p-3 text-sm shadow-sm transition hover:border-primary hover:shadow-md",
         active ? "border-primary shadow-sm ring-2 ring-teal-100" : "border-border",
         isDragging && "z-20 opacity-70 shadow-lg",
       )}
