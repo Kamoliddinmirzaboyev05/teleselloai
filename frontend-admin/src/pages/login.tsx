@@ -1,30 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { login } from "@/lib/api";
-import { getApiBaseUrl, saveApiBaseUrl } from "@/lib/api-config";
 import { saveToken } from "@/lib/auth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setBaseUrl(getApiBaseUrl());
-  }, []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
-    saveApiBaseUrl(baseUrl);
     try {
       const response = await login(username, password);
       saveToken(response.access_token);
@@ -46,15 +39,6 @@ export default function LoginPage() {
         <label className="mb-3 block text-sm font-medium">
           Login
           <Input value={username} onChange={(event) => setUsername(event.target.value)} className="mt-1" />
-        </label>
-        <label className="mb-3 block text-sm font-medium">
-          Backend Base URL
-          <Input
-            value={baseUrl}
-            onChange={(event) => setBaseUrl(event.target.value)}
-            className="mt-1"
-            placeholder="/api"
-          />
         </label>
         <label className="mb-4 block text-sm font-medium">
           Parol
