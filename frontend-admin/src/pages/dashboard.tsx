@@ -11,13 +11,16 @@ import { getToken } from "@/lib/auth";
 import type { AIChatFilterMode, ChatMessage, Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
 
 const aiFilterOptions: Array<{ value: AIChatFilterMode; label: string }> = [
-  { value: "all", label: "Hammaga yozsin" },
-  { value: "humans", label: "Faqat odamlarga yozsin" },
+  { value: "all", label: "Hamma odamlarga yozsin" },
   { value: "new", label: "Faqat yangi yozganlarga" },
   { value: "selected", label: "Faqat tanlangan chatlarga" },
   { value: "exclude", label: "Yozmasin listidan tashqari hammaga" },
   { value: "none", label: "Hech kimga yozmasin" },
 ];
+
+function normalizeAIFilterMode(mode: AIChatFilterMode): AIChatFilterMode {
+  return mode === "humans" ? "all" : mode;
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -43,7 +46,7 @@ export default function DashboardPage() {
       const [data, pauseStatus, filterStatus] = await Promise.all([fetchLeads(), fetchAIPauseStatus(), fetchAIChatFilter()]);
       setLeads(data);
       setAiPaused(pauseStatus.ai_paused);
-      setAiFilterMode(filterStatus.mode);
+      setAiFilterMode(normalizeAIFilterMode(filterStatus.mode));
     } finally {
       setLoading(false);
     }
@@ -147,6 +150,7 @@ export default function DashboardPage() {
               selectedLeadId={selectedLead?.id}
               onSelectLead={onSelectLead}
               onChangeStatus={onChangeStatus}
+              onChangeAIFilter={onChangeLeadAIFilter}
             />
           </section>
           {showChat ? (

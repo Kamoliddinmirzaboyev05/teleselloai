@@ -55,18 +55,22 @@ def test_build_system_prompt_includes_business_settings_and_data_capture_contrac
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("mode", "lead_filter", "lead_status", "sender_is_bot", "expected"),
-    [
-        ("all", "default", "thinking", False, True),
-        ("humans", "default", "thinking", True, False),
-        ("new", "default", "new", False, True),
-        ("new", "default", "thinking", False, False),
-        ("selected", "allow", "thinking", False, True),
-        ("selected", "default", "thinking", False, False),
-        ("exclude", "block", "thinking", False, False),
-        ("exclude", "default", "thinking", False, True),
-        ("none", "allow", "new", False, False),
-    ],
+        ("mode", "lead_filter", "lead_status", "sender_is_bot", "expected"),
+        [
+            ("all", "default", "thinking", False, True),
+            ("all", "default", "thinking", True, False),
+            ("humans", "default", "thinking", True, False),
+            ("new", "default", "new", False, True),
+            ("new", "default", "new", True, False),
+            ("new", "default", "thinking", False, False),
+            ("selected", "allow", "thinking", False, True),
+            ("selected", "allow", "thinking", True, False),
+            ("selected", "default", "thinking", False, False),
+            ("exclude", "block", "thinking", False, False),
+            ("exclude", "default", "thinking", False, True),
+            ("exclude", "default", "thinking", True, False),
+            ("none", "allow", "new", False, False),
+        ],
 )
 async def test_ai_chat_filter_modes(monkeypatch, mode, lead_filter, lead_status, sender_is_bot, expected):
     async def get_ai_chat_filter(_session, _account_id):

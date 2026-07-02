@@ -3,7 +3,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { Bot, Clock, Phone, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import type { Lead, LeadStatus } from "@/lib/types";
+import type { Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
 import { cn, formatDateTime } from "@/lib/utils";
 
 export function LeadCard({
@@ -11,11 +11,13 @@ export function LeadCard({
   active,
   onClick,
   onChangeStatus,
+  onChangeAIFilter,
 }: {
   lead: Lead;
   active: boolean;
   onClick: () => void;
   onChangeStatus: (status: LeadStatus) => void;
+  onChangeAIFilter: (aiFilter: LeadAIFilter) => void;
 }) {
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
     id: lead.id,
@@ -56,7 +58,7 @@ export function LeadCard({
       {lead.ai_filter !== "default" ? (
         <p className="mb-2 inline-flex items-center gap-1 rounded bg-teal-50 px-2 py-1 text-xs font-medium text-primary">
           <Bot className="h-3.5 w-3.5" />
-          {lead.ai_filter === "allow" ? "AI yozsin" : "AI yozmasin"}
+          {lead.ai_filter === "allow" ? "Tanlangan" : "Yozmasin listida"}
         </p>
       ) : null}
       <div className="space-y-1 text-xs text-muted-foreground">
@@ -83,6 +85,16 @@ export function LeadCard({
         <option value="thinking">thinking</option>
         <option value="won">won</option>
         <option value="lost">lost</option>
+      </select>
+      <select
+        value={lead.ai_filter}
+        onClick={(event) => event.stopPropagation()}
+        onChange={(event) => onChangeAIFilter(event.target.value as LeadAIFilter)}
+        className="mt-2 h-8 w-full rounded border border-border bg-white px-2 text-xs"
+      >
+        <option value="default">AI: oddiy</option>
+        <option value="allow">AI: tanlanganlarga qo'shish</option>
+        <option value="block">AI: yozmasin listiga qo'shish</option>
       </select>
     </article>
   );

@@ -79,7 +79,7 @@ export function ChatPanel({
             onClick={() => onChangeAIFilter(lead, "allow")}
           >
             <Bot className="h-3.5 w-3.5" />
-            Yozsin
+            Tanlangan
           </Button>
           <Button
             variant={lead.ai_filter === "block" ? "primary" : "outline"}

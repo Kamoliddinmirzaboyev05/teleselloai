@@ -13,6 +13,8 @@ from app.utils.parser import parse_ai_response
 
 
 async def should_ai_reply_to_lead(session: AsyncSession, lead: Lead, *, sender_is_bot: bool = False) -> bool:
+    if sender_is_bot:
+        return False
     mode = await ai_settings_service.get_ai_chat_filter(session, lead.account_id)
     lead_filter = getattr(lead, "ai_filter", "default") or "default"
     if mode == "none":

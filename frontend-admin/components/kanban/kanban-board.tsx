@@ -1,6 +1,6 @@
 import { DndContext, DragEndEvent, useDroppable } from "@dnd-kit/core";
 
-import type { Lead, LeadStatus } from "@/lib/types";
+import type { Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
 import { LeadCard } from "@/components/kanban/lead-card";
 import { cn } from "@/lib/utils";
 
@@ -17,12 +17,14 @@ export function KanbanBoard({
   selectedLeadId,
   onSelectLead,
   onChangeStatus,
+  onChangeAIFilter,
 }: {
   leads: Lead[];
   loading: boolean;
   selectedLeadId?: string;
   onSelectLead: (lead: Lead) => void;
   onChangeStatus: (lead: Lead, status: LeadStatus) => void;
+  onChangeAIFilter: (lead: Lead, aiFilter: LeadAIFilter) => void;
 }) {
   function handleDragEnd(event: DragEndEvent) {
     const nextStatus = event.over?.id as LeadStatus | undefined;
@@ -45,6 +47,7 @@ export function KanbanBoard({
             selectedLeadId={selectedLeadId}
             onSelectLead={onSelectLead}
             onChangeStatus={onChangeStatus}
+            onChangeAIFilter={onChangeAIFilter}
           />
         ))}
       </div>
@@ -59,6 +62,7 @@ function KanbanColumn({
   selectedLeadId,
   onSelectLead,
   onChangeStatus,
+  onChangeAIFilter,
 }: {
   column: { id: LeadStatus; title: string };
   leads: Lead[];
@@ -66,6 +70,7 @@ function KanbanColumn({
   selectedLeadId?: string;
   onSelectLead: (lead: Lead) => void;
   onChangeStatus: (lead: Lead, status: LeadStatus) => void;
+  onChangeAIFilter: (lead: Lead, aiFilter: LeadAIFilter) => void;
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: column.id });
 
@@ -90,6 +95,7 @@ function KanbanColumn({
             active={lead.id === selectedLeadId}
             onClick={() => onSelectLead(lead)}
             onChangeStatus={(status) => onChangeStatus(lead, status)}
+            onChangeAIFilter={(aiFilter) => onChangeAIFilter(lead, aiFilter)}
           />
         ))}
         {!loading && leads.length === 0 ? (
