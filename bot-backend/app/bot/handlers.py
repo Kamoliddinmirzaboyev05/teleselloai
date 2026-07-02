@@ -5,7 +5,7 @@ from telethon import events
 
 from app.config import get_settings
 from app.database import AsyncSessionLocal
-from app.services import chat_service, lead_service, redis_service
+from app.services import ai_settings_service, chat_service, lead_service, redis_service
 from app.services.telegram_service import TelegramConversationService
 from app.utils.logger import log_error
 
@@ -84,7 +84,8 @@ async def handle_account_message(event: events.NewMessage.Event, account_id: UUI
             if is_audio:
                 Path("downloads").mkdir(exist_ok=True)
                 audio_path = await event.download_media(file="downloads/")
-                content = await conversation_service.groq.transcribe_audio(str(audio_path))
+                groq_api_key = await ai_settings_service.get_groq_api_key(session, account_id)
+                content = await conversation_service.groq.transcribe_audio(str(audio_path), api_key=groq_api_key)
 
             reply = await conversation_service.handle_customer_text(
                 session,

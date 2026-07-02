@@ -8,16 +8,17 @@ class GroqService:
     def __init__(self) -> None:
         self.settings = get_settings()
 
-    def _client(self):
-        if not self.settings.groq_api_key:
+    def _client(self, api_key: str | None = None):
+        resolved_api_key = (api_key or self.settings.groq_api_key).strip()
+        if not resolved_api_key:
             raise RuntimeError("GROQ_API_KEY is not configured")
         from groq import Groq
 
-        return Groq(api_key=self.settings.groq_api_key)
+        return Groq(api_key=resolved_api_key)
 
-    async def generate_reply(self, messages: list[dict[str, str]]) -> str:
+    async def generate_reply(self, messages: list[dict[str, str]], api_key: str | None = None) -> str:
         def call() -> str:
-            completion = self._client().chat.completions.create(
+            completion = self._client(api_key).chat.completions.create(
                 model=self.settings.groq_text_model,
                 messages=messages,
                 temperature=0.4,
@@ -26,10 +27,10 @@ class GroqService:
 
         return await asyncio.to_thread(call)
 
-    async def transcribe_audio(self, audio_path: str) -> str:
+    async def transcribe_audio(self, audio_path: str, api_key: str | None = None) -> str:
         def call() -> str:
             with Path(audio_path).open("rb") as audio_file:
-                transcription = self._client().audio.transcriptions.create(
+                transcription = self._client(api_key).audio.transcriptions.create(
                     file=audio_file,
                     model=self.settings.groq_stt_model,
                 )

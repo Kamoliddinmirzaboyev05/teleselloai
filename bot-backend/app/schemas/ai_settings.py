@@ -23,3 +23,11 @@ class AISettings(BaseModel):
 
 class AIPauseStatus(BaseModel):
     ai_paused: bool = False
+
+
+class GroqKeyRead(BaseModel):
+    groq_api_key_set: bool = False
+
+
+class GroqKeyUpdate(BaseModel):
+    groq_api_key: str = ""

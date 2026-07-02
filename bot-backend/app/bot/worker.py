@@ -15,6 +15,10 @@ def should_start_worker(enabled: bool, telegram_api_id: str, telegram_api_hash: 
     return enabled and bool(telegram_api_id) and bool(telegram_api_hash)
 
 
+def should_run_multi_account_worker() -> bool:
+    return True
+
+
 async def main() -> None:
     settings = get_settings()
     if not settings.bot_worker_enabled:
@@ -57,12 +61,8 @@ async def start_account_client(account: Account):
 
 
 async def multi_account_main() -> None:
-    settings = get_settings()
-    if not settings.bot_worker_enabled:
-        print("Bot worker disabled. Set BOT_WORKER_ENABLED=true after Telegram credentials are configured.")
-        while True:
-            await asyncio.sleep(3600)
-
+    if not should_run_multi_account_worker():
+        return
     clients: dict[UUID, object] = {}
     while True:
         accounts = await list_connected_accounts()

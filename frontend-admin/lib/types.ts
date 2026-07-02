@@ -77,3 +77,7 @@ export type AISettings = {
 export type AIPauseStatus = {
   ai_paused: boolean;
 };
+
+export type GroqKeyStatus = {
+  groq_api_key_set: boolean;
+};

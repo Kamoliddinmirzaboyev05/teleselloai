@@ -10,6 +10,7 @@ from app.schemas.ai_settings import AISettings
 
 AI_SETTINGS_KEY = "ai_settings"
 AI_PAUSE_KEY = "ai_paused"
+GROQ_API_KEY = "groq_api_key"
 
 DEFAULT_AI_SETTINGS = AISettings().model_dump()
 
@@ -92,3 +93,31 @@ async def update_ai_pause_status(session: AsyncSession, ai_paused: bool, account
         session.add(Setting(account_id=account_id, key=AI_PAUSE_KEY, value=encoded))
     await session.commit()
     return bool(ai_paused)
+
+
+async def get_groq_api_key(session: AsyncSession, account_id: UUID | None = None) -> str:
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == GROQ_API_KEY))
+    setting = result.scalar_one_or_none()
+    if not setting and account_id is not None:
+        result = await session.execute(select(Setting).where(Setting.account_id.is_(None), Setting.key == GROQ_API_KEY))
+        setting = result.scalar_one_or_none()
+    return setting.value.strip() if setting and setting.value else ""
+
+
+async def is_groq_api_key_set(session: AsyncSession, account_id: UUID | None = None) -> bool:
+    return bool(await get_groq_api_key(session, account_id))
+
+
+async def update_groq_api_key(session: AsyncSession, groq_api_key: str, account_id: UUID | None = None) -> bool:
+    cleaned = groq_api_key.strip()
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == GROQ_API_KEY))
+    setting = result.scalar_one_or_none()
+    if setting:
+        if cleaned:
+            setting.value = cleaned
+        else:
+            await session.delete(setting)
+    elif cleaned:
+        session.add(Setting(account_id=account_id, key=GROQ_API_KEY, value=cleaned))
+    await session.commit()
+    return bool(cleaned)

@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getToken } from "@/lib/auth";
-import type { AdminUser, AIPauseStatus, AISettings, ChatMessage, CurrentUser, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
+import type { AdminUser, AIPauseStatus, AISettings, ChatMessage, CurrentUser, GroqKeyStatus, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
@@ -84,6 +84,17 @@ export function updateAIPauseStatus(payload: AIPauseStatus) {
   return request<AIPauseStatus>("/api/ai-settings/pause", {
     method: "PUT",
     body: JSON.stringify(payload),
+  });
+}
+
+export function fetchGroqKeyStatus() {
+  return request<GroqKeyStatus>("/api/ai-settings/groq-key");
+}
+
+export function updateGroqKey(groqApiKey: string) {
+  return request<GroqKeyStatus>("/api/ai-settings/groq-key", {
+    method: "PUT",
+    body: JSON.stringify({ groq_api_key: groqApiKey }),
   });
 }
 

@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { fetchAISettings, updateAISettings } from "@/lib/api";
+import { fetchAISettings, fetchGroqKeyStatus, updateAISettings, updateGroqKey } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { AISettings, FAQItem } from "@/lib/types";
 
@@ -43,6 +43,10 @@ export default function AISettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [groqApiKey, setGroqApiKey] = useState("");
+  const [groqKeySet, setGroqKeySet] = useState(false);
+  const [savingGroqKey, setSavingGroqKey] = useState(false);
+  const [groqKeyMessage, setGroqKeyMessage] = useState("");
 
   const loadSettings = useCallback(async () => {
     if (!getToken()) {
@@ -51,7 +55,9 @@ export default function AISettingsPage() {
     }
     setLoading(true);
     try {
-      setSettings(await fetchAISettings());
+      const [nextSettings, keyStatus] = await Promise.all([fetchAISettings(), fetchGroqKeyStatus()]);
+      setSettings(nextSettings);
+      setGroqKeySet(keyStatus.groq_api_key_set);
     } finally {
       setLoading(false);
     }
@@ -99,6 +105,21 @@ export default function AISettingsPage() {
     }
   }
 
+  async function onSaveGroqKey() {
+    setSavingGroqKey(true);
+    setGroqKeyMessage("");
+    try {
+      const status = await updateGroqKey(groqApiKey);
+      setGroqKeySet(status.groq_api_key_set);
+      setGroqApiKey("");
+      setGroqKeyMessage(status.groq_api_key_set ? "Groq API key saqlandi" : "Groq API key o'chirildi");
+    } catch {
+      setGroqKeyMessage("Groq API key saqlanmadi");
+    } finally {
+      setSavingGroqKey(false);
+    }
+  }
+
   return (
     <AppShell>
       <main className="min-h-screen bg-background">
@@ -115,6 +136,32 @@ export default function AISettingsPage() {
 
         <div className="mx-auto grid max-w-6xl gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <section className="space-y-4">
+            <div className="rounded border border-border bg-white p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <label className="block flex-1 text-sm font-medium">
+                  Groq API key
+                  <Input
+                    type="password"
+                    value={groqApiKey}
+                    onChange={(event) => {
+                      setGroqKeyMessage("");
+                      setGroqApiKey(event.target.value);
+                    }}
+                    className="mt-1"
+                    placeholder={groqKeySet ? "Saqlangan, almashtirish uchun yangisini kiriting" : "gsk_..."}
+                  />
+                </label>
+                <Button onClick={onSaveGroqKey} disabled={loading || savingGroqKey}>
+                  <Save className="h-4 w-4" />
+                  {savingGroqKey ? "Saqlanmoqda" : "Key saqlash"}
+                </Button>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {groqKeySet ? "Groq key saqlangan. Xavfsizlik uchun key qayta ko'rsatilmaydi." : "AI javob berishi uchun Groq API key kerak."}
+              </p>
+              {groqKeyMessage ? <p className="mt-3 rounded bg-teal-50 p-2 text-sm text-primary">{groqKeyMessage}</p> : null}
+            </div>
+
             <div className="rounded border border-border bg-white p-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block text-sm font-medium">

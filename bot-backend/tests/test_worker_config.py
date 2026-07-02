@@ -1,4 +1,4 @@
-from app.bot.worker import should_start_worker
+from app.bot.worker import should_run_multi_account_worker, should_start_worker
 
 
 def test_worker_does_not_start_when_disabled():
@@ -9,3 +9,7 @@ def test_worker_requires_credentials_when_enabled():
     assert should_start_worker(True, "", "hash") is False
     assert should_start_worker(True, "123", "") is False
     assert should_start_worker(True, "123", "hash") is True
+
+
+def test_multi_account_worker_runs_without_legacy_env_credentials():
+    assert should_run_multi_account_worker() is True

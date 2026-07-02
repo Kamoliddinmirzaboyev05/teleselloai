@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.deps import SessionDep, require_admin
-from app.schemas.ai_settings import AISettings, AIPauseStatus
+from app.schemas.ai_settings import AISettings, AIPauseStatus, GroqKeyRead, GroqKeyUpdate
 from app.schemas.user import CurrentUser
 from app.services import ai_settings_service
 
@@ -21,6 +21,21 @@ async def save_ai_pause_status(
 ) -> AIPauseStatus:
     ai_paused = await ai_settings_service.update_ai_pause_status(session, payload.ai_paused, current_user.account_id)
     return AIPauseStatus(ai_paused=ai_paused)
+
+
+@router.get("/groq-key", response_model=GroqKeyRead)
+async def read_groq_key_status(session: SessionDep, current_user: CurrentUser = Depends(require_admin)) -> GroqKeyRead:
+    return GroqKeyRead(groq_api_key_set=await ai_settings_service.is_groq_api_key_set(session, current_user.account_id))
+
+
+@router.put("/groq-key", response_model=GroqKeyRead)
+async def save_groq_key(
+    payload: GroqKeyUpdate,
+    session: SessionDep,
+    current_user: CurrentUser = Depends(require_admin),
+) -> GroqKeyRead:
+    is_set = await ai_settings_service.update_groq_api_key(session, payload.groq_api_key, current_user.account_id)
+    return GroqKeyRead(groq_api_key_set=is_set)
 
 
 @router.get("", response_model=AISettings)
