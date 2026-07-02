@@ -1,7 +1,8 @@
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { Bot, Clock, Phone, UserRound } from "lucide-react";
-import type { PointerEvent } from "react";
+import { forwardRef } from "react";
+import type { ComponentPropsWithoutRef, PointerEvent } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import type { Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
@@ -33,18 +34,66 @@ export function LeadCard({
   };
 
   return (
-    <article
+    <LeadCardView
       ref={setNodeRef}
       style={style}
-      className={cn(
-        "cursor-grab rounded-lg border bg-white p-3 text-sm shadow-sm transition hover:border-primary hover:shadow-md active:cursor-grabbing",
-        active ? "border-primary shadow-sm ring-2 ring-teal-100" : "border-border",
-        isDragging && "z-20 opacity-70 shadow-lg",
-      )}
+      lead={lead}
+      active={active}
+      dragging={isDragging}
+      className="cursor-grab active:cursor-grabbing"
       onClick={onClick}
       title="Cardni sudrab boshqa ustunga ko'chiring"
+      onChangeStatus={onChangeStatus}
+      onChangeAIFilter={onChangeAIFilter}
+      onInteractivePointerDown={stopInteractivePointer}
       {...listeners}
       {...attributes}
+    />
+  );
+}
+
+export function LeadCardPreview({ lead }: { lead: Lead }) {
+  return (
+    <LeadCardView
+      lead={lead}
+      active
+      dragging
+      className="cursor-grabbing shadow-xl ring-2 ring-primary/20"
+      onChangeStatus={() => undefined}
+      onChangeAIFilter={() => undefined}
+      onInteractivePointerDown={() => undefined}
+    />
+  );
+}
+
+const LeadCardView = forwardRef<HTMLElement, ComponentPropsWithoutRef<"article"> & {
+  lead: Lead;
+  active: boolean;
+  dragging?: boolean;
+  onChangeStatus: (status: LeadStatus) => void;
+  onChangeAIFilter: (aiFilter: LeadAIFilter) => void;
+  onInteractivePointerDown: (event: PointerEvent<HTMLElement>) => void;
+}>(({
+  lead,
+  active,
+  dragging,
+  className,
+  onChangeStatus,
+  onChangeAIFilter,
+  onInteractivePointerDown,
+  ...articleProps
+}, ref) => {
+  return (
+    <article
+      ref={ref}
+      data-lead-card={lead.id}
+      className={cn(
+        "rounded-lg border bg-white p-3 text-sm shadow-sm transition hover:border-primary hover:shadow-md",
+        active ? "border-primary shadow-sm ring-2 ring-teal-100" : "border-border",
+        dragging && "z-20 opacity-75",
+        className,
+      )}
+      {...articleProps}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -75,7 +124,7 @@ export function LeadCard({
       </div>
       <select
         value={lead.status}
-        onPointerDown={stopInteractivePointer}
+        onPointerDown={onInteractivePointerDown}
         onClick={(event) => event.stopPropagation()}
         onChange={(event) => onChangeStatus(event.target.value as LeadStatus)}
         className="mt-3 h-8 w-full rounded border border-border bg-white px-2 text-xs"
@@ -87,7 +136,7 @@ export function LeadCard({
       </select>
       <select
         value={lead.ai_filter}
-        onPointerDown={stopInteractivePointer}
+        onPointerDown={onInteractivePointerDown}
         onClick={(event) => event.stopPropagation()}
         onChange={(event) => onChangeAIFilter(event.target.value as LeadAIFilter)}
         className="mt-2 h-8 w-full rounded border border-border bg-white px-2 text-xs"
@@ -98,4 +147,6 @@ export function LeadCard({
       </select>
     </article>
   );
-}
+});
+
+LeadCardView.displayName = "LeadCardView";

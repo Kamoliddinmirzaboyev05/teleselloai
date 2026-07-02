@@ -1,9 +1,24 @@
-import { useRef } from "react";
-import { closestCorners, DndContext, DragEndEvent, DragOverEvent, DragStartEvent, PointerSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
+import { useMemo, useRef, useState } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragOverEvent,
+  DragStartEvent,
+  MeasuringStrategy,
+  PointerSensor,
+  pointerWithin,
+  rectIntersection,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { CollisionDetection, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 import type { Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
-import { LeadCard } from "@/components/kanban/lead-card";
+import { getProjectedLeads } from "@/components/kanban/kanban-board.logic";
+import { LeadCard, LeadCardPreview } from "@/components/kanban/lead-card";
 import { cn } from "@/lib/utils";
 
 const columns: Array<{ id: LeadStatus; title: string }> = [
@@ -12,6 +27,29 @@ const columns: Array<{ id: LeadStatus; title: string }> = [
   { id: "won", title: "Muvaffaqiyatli" },
   { id: "lost", title: "Rad etganlar" },
 ];
+
+const columnDropIds = new Set<UniqueIdentifier>(columns.flatMap((column) => [column.id, `${column.id}-items`]));
+
+const pointerFirstCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  const leadCollisions = pointerCollisions.filter((collision) => collision.data?.droppableContainer.data.current?.type === "lead");
+  if (leadCollisions.length) {
+    return leadCollisions;
+  }
+
+  const columnCollisions = pointerCollisions.filter((collision) => columnDropIds.has(collision.id));
+  if (columnCollisions.length) {
+    return columnCollisions;
+  }
+
+  const rectCollisions = rectIntersection(args);
+  const rectLeadCollisions = rectCollisions.filter((collision) => collision.data?.droppableContainer.data.current?.type === "lead");
+  if (rectLeadCollisions.length) {
+    return rectLeadCollisions;
+  }
+
+  return rectCollisions.filter((collision) => columnDropIds.has(collision.id));
+};
 
 export function KanbanBoard({
   leads,
@@ -30,8 +68,10 @@ export function KanbanBoard({
   onChangeAIFilter: (lead: Lead, aiFilter: LeadAIFilter) => void;
   onReorderLeads: (leads: Lead[]) => void;
 }) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 3 } }));
+  const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
   const activeOriginalStatusRef = useRef<LeadStatus | null>(null);
+  const activeLead = useMemo(() => leads.find((lead) => lead.id === activeLeadId) ?? null, [activeLeadId, leads]);
 
   function findLead(leadId: string) {
     return leads.find((lead) => lead.id === leadId);
@@ -51,38 +91,9 @@ export function KanbanBoard({
     return null;
   }
 
-  function getProjectedLeads(activeId: string, overId: string, nextStatus: LeadStatus) {
-    const activeLead = findLead(activeId);
-    if (!activeLead) {
-      return leads;
-    }
-    const overLead = findLead(overId);
-    const activeIndex = leads.findIndex((lead) => lead.id === activeId);
-    if (overLead) {
-      const overIndex = leads.findIndex((lead) => lead.id === overId);
-      const movedLead = { ...activeLead, status: nextStatus };
-      const withoutActive = leads.filter((lead) => lead.id !== activeId);
-      const overIndexAfterRemoval = withoutActive.findIndex((lead) => lead.id === overId);
-      const insertIndex = activeIndex < overIndex ? overIndexAfterRemoval + 1 : overIndexAfterRemoval;
-      return [...withoutActive.slice(0, insertIndex), movedLead, ...withoutActive.slice(insertIndex)];
-    }
-
-    const columnLeadIndexes = leads
-      .map((lead, index) => ({ lead, index }))
-      .filter((item) => item.lead.status === nextStatus)
-      .map((item) => item.index);
-    const insertIndex = columnLeadIndexes.length ? columnLeadIndexes[columnLeadIndexes.length - 1] + 1 : leads.length;
-    const withoutActive = leads.filter((lead) => lead.id !== activeId);
-    const adjustedIndex = activeIndex < insertIndex ? insertIndex - 1 : insertIndex;
-    return [
-      ...withoutActive.slice(0, adjustedIndex),
-      { ...activeLead, status: nextStatus },
-      ...withoutActive.slice(adjustedIndex),
-    ];
-  }
-
   function handleDragStart(_event: DragStartEvent) {
     const lead = findLead(String(_event.active.id));
+    setActiveLeadId(lead?.id ?? null);
     activeOriginalStatusRef.current = lead?.status ?? null;
     window.getSelection()?.removeAllRanges();
   }
@@ -98,7 +109,7 @@ export function KanbanBoard({
     if (!activeLead || activeLead.status === nextStatus) {
       return;
     }
-    onReorderLeads(getProjectedLeads(activeId, overId, nextStatus));
+    onReorderLeads(getProjectedLeads(leads, activeId, overId, nextStatus));
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -107,16 +118,20 @@ export function KanbanBoard({
     const nextStatus = getOverStatus(event);
     const activeLead = findLead(activeId);
     if (!activeLead || !nextStatus || !overId) {
+      setActiveLeadId(null);
+      activeOriginalStatusRef.current = null;
       return;
     }
-    const finalLeads = getProjectedLeads(activeId, overId, nextStatus);
+    const finalLeads = getProjectedLeads(leads, activeId, overId, nextStatus);
     onReorderLeads(finalLeads);
     if (activeOriginalStatusRef.current && activeOriginalStatusRef.current !== nextStatus) {
       onChangeStatus(activeLead, nextStatus);
       activeOriginalStatusRef.current = null;
+      setActiveLeadId(null);
       return;
     }
     activeOriginalStatusRef.current = null;
+    setActiveLeadId(null);
     if (overId !== activeId) {
       const oldIndex = leads.findIndex((lead) => lead.id === activeId);
       const newIndex = leads.findIndex((lead) => lead.id === overId);
@@ -127,7 +142,18 @@ export function KanbanBoard({
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={pointerFirstCollisionDetection}
+      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => {
+        setActiveLeadId(null);
+        activeOriginalStatusRef.current = null;
+      }}
+    >
       <div className="grid h-full min-w-[980px] grid-cols-4 gap-4">
         {columns.map((column) => (
           <KanbanColumn
@@ -142,6 +168,7 @@ export function KanbanBoard({
           />
         ))}
       </div>
+      <DragOverlay dropAnimation={null}>{activeLead ? <LeadCardPreview lead={activeLead} /> : null}</DragOverlay>
     </DndContext>
   );
 }
@@ -169,6 +196,7 @@ function KanbanColumn({
   return (
     <section
       ref={setNodeRef}
+      data-kanban-column={column.id}
       className={cn(
         "flex min-h-0 flex-col rounded-lg border border-border bg-white shadow-sm transition",
         isOver && "border-primary bg-teal-50/50",
