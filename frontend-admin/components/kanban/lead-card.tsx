@@ -1,4 +1,4 @@
-import { Clock, Phone, UserRound } from "lucide-react";
+import { Bot, Clock, Phone, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import type { Lead, LeadStatus } from "@/lib/types";
@@ -30,6 +30,12 @@ export function LeadCard({
         </div>
         <Badge value={lead.status} />
       </div>
+      {lead.ai_filter !== "default" ? (
+        <p className="mb-2 inline-flex items-center gap-1 rounded bg-teal-50 px-2 py-1 text-xs font-medium text-primary">
+          <Bot className="h-3.5 w-3.5" />
+          {lead.ai_filter === "allow" ? "AI yozsin" : "AI yozmasin"}
+        </p>
+      ) : null}
       <div className="space-y-1 text-xs text-muted-foreground">
         <p className="flex items-center gap-1">
           <Phone className="h-3.5 w-3.5" />

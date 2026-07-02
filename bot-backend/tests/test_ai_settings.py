@@ -54,6 +54,34 @@ def test_build_system_prompt_includes_business_settings_and_data_capture_contrac
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("mode", "lead_filter", "lead_status", "sender_is_bot", "expected"),
+    [
+        ("all", "default", "thinking", False, True),
+        ("humans", "default", "thinking", True, False),
+        ("new", "default", "new", False, True),
+        ("new", "default", "thinking", False, False),
+        ("selected", "allow", "thinking", False, True),
+        ("selected", "default", "thinking", False, False),
+        ("exclude", "block", "thinking", False, False),
+        ("exclude", "default", "thinking", False, True),
+        ("none", "allow", "new", False, False),
+    ],
+)
+async def test_ai_chat_filter_modes(monkeypatch, mode, lead_filter, lead_status, sender_is_bot, expected):
+    async def get_ai_chat_filter(_session, _account_id):
+        return mode
+
+    monkeypatch.setattr(telegram_service.ai_settings_service, "get_ai_chat_filter", get_ai_chat_filter, raising=False)
+
+    lead = SimpleNamespace(account_id=uuid.uuid4(), ai_filter=lead_filter, status=lead_status)
+
+    allowed = await telegram_service.should_ai_reply_to_lead(object(), lead, sender_is_bot=sender_is_bot)
+
+    assert allowed is expected
+
+
+@pytest.mark.asyncio
 async def test_global_ai_pause_skips_ai_reply(monkeypatch):
     messages = []
     groq_calls = []
@@ -109,6 +137,9 @@ async def test_conversation_service_uses_account_groq_api_key(monkeypatch):
     async def get_groq_api_key(_session, _account_id):
         return "account-groq-key"
 
+    async def get_ai_chat_filter(_session, _account_id):
+        return "all"
+
     class FakeGroq:
         async def generate_reply(self, _messages, api_key=None):
             captured_api_keys.append(api_key)
@@ -119,6 +150,7 @@ async def test_conversation_service_uses_account_groq_api_key(monkeypatch):
     monkeypatch.setattr(telegram_service.ai_settings_service, "get_ai_settings", get_ai_settings)
     monkeypatch.setattr(telegram_service.ai_settings_service, "get_ai_pause_status", get_ai_pause_status, raising=False)
     monkeypatch.setattr(telegram_service.ai_settings_service, "get_groq_api_key", get_groq_api_key, raising=False)
+    monkeypatch.setattr(telegram_service.ai_settings_service, "get_ai_chat_filter", get_ai_chat_filter, raising=False)
     async def apply_captured_data(*_args, **_kwargs):
         return None
 

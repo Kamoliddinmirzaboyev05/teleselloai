@@ -10,6 +10,7 @@ from app.models.lead import Lead
 from app.schemas.lead import LeadUpdate
 
 VALID_STATUSES = {"new", "thinking", "won", "lost"}
+VALID_AI_FILTERS = {"default", "allow", "block"}
 
 
 async def get_or_create_default_account(session: AsyncSession) -> Account:
@@ -93,6 +94,8 @@ async def update_lead(session: AsyncSession, lead: Lead, patch: LeadUpdate | dic
     data = patch.model_dump(exclude_unset=True) if isinstance(patch, LeadUpdate) else patch
     if "status" in data and data["status"] is not None and data["status"] not in VALID_STATUSES:
         raise ValueError("Invalid lead status")
+    if "ai_filter" in data and data["ai_filter"] is not None and data["ai_filter"] not in VALID_AI_FILTERS:
+        raise ValueError("Invalid AI filter")
     for key, value in data.items():
         if value is not None:
             setattr(lead, key, value)

@@ -94,6 +94,7 @@ async def handle_account_message(event: events.NewMessage.Event, account_id: UUI
                 content,
                 is_audio=is_audio,
                 audio_path=str(audio_path) if audio_path else None,
+                sender_is_bot=bool(getattr(sender, "bot", False)),
             )
             if not reply:
                 return

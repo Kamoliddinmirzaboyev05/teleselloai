@@ -6,9 +6,18 @@ import { ChatPanel } from "@/components/chat/chat-panel";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
-import { fetchAIPauseStatus, fetchLeadChat, fetchLeads, updateAIPauseStatus, updateLead } from "@/lib/api";
+import { fetchAIChatFilter, fetchAIPauseStatus, fetchLeadChat, fetchLeads, updateAIChatFilter, updateAIPauseStatus, updateLead } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import type { ChatMessage, Lead, LeadStatus } from "@/lib/types";
+import type { AIChatFilterMode, ChatMessage, Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
+
+const aiFilterOptions: Array<{ value: AIChatFilterMode; label: string }> = [
+  { value: "all", label: "Hammaga yozsin" },
+  { value: "humans", label: "Faqat odamlarga yozsin" },
+  { value: "new", label: "Faqat yangi yozganlarga" },
+  { value: "selected", label: "Faqat tanlangan chatlarga" },
+  { value: "exclude", label: "Yozmasin listidan tashqari hammaga" },
+  { value: "none", label: "Hech kimga yozmasin" },
+];
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -17,6 +26,7 @@ export default function DashboardPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiPaused, setAiPaused] = useState(false);
+  const [aiFilterMode, setAiFilterMode] = useState<AIChatFilterMode>("all");
   const [pauseSaving, setPauseSaving] = useState(false);
   const [pauseMessage, setPauseMessage] = useState("");
 
@@ -32,9 +42,10 @@ export default function DashboardPage() {
     }
     setLoading(true);
     try {
-      const [data, pauseStatus] = await Promise.all([fetchLeads(), fetchAIPauseStatus()]);
+      const [data, pauseStatus, filterStatus] = await Promise.all([fetchLeads(), fetchAIPauseStatus(), fetchAIChatFilter()]);
       setLeads(data);
       setAiPaused(pauseStatus.ai_paused);
+      setAiFilterMode(filterStatus.mode);
       if (!selectedLeadId && data[0]) {
         setSelectedLeadId(data[0].id);
       }
@@ -55,6 +66,16 @@ export default function DashboardPage() {
   async function onChangeStatus(lead: Lead, status: LeadStatus) {
     const updated = await updateLead(lead.id, { status });
     setLeads((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+  }
+
+  async function onChangeLeadAIFilter(lead: Lead, aiFilter: LeadAIFilter) {
+    const updated = await updateLead(lead.id, { ai_filter: aiFilter });
+    setLeads((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+  }
+
+  async function onChangeAIChatFilter(mode: AIChatFilterMode) {
+    const updated = await updateAIChatFilter(mode);
+    setAiFilterMode(updated.mode);
   }
 
   async function onTogglePause() {
@@ -89,6 +110,18 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">{leads.length} ta lead</p>
           </div>
           <div className="flex items-center gap-2">
+            <select
+              value={aiFilterMode}
+              onChange={(event) => void onChangeAIChatFilter(event.target.value as AIChatFilterMode)}
+              className="h-9 rounded border border-border bg-white px-3 text-sm"
+              title="AI kimga yozsin"
+            >
+              {aiFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <Button variant={aiPaused ? "primary" : "secondary"} onClick={onTogglePause} disabled={pauseSaving}>
               <PauseCircle className="h-4 w-4" />
               {aiPaused ? "AI ni yoqish" : "AI ni o'chirish"}
@@ -110,7 +143,13 @@ export default function DashboardPage() {
               onChangeStatus={onChangeStatus}
             />
           </section>
-          <ChatPanel lead={selectedLead ?? null} messages={messages} aiPaused={aiPaused} onChangeStatus={onChangeStatus} />
+          <ChatPanel
+            lead={selectedLead ?? null}
+            messages={messages}
+            aiPaused={aiPaused}
+            onChangeStatus={onChangeStatus}
+            onChangeAIFilter={onChangeLeadAIFilter}
+          />
         </div>
       </div>
     </AppShell>

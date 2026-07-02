@@ -12,6 +12,22 @@ from app.services.prompt_service import build_messages
 from app.utils.parser import parse_ai_response
 
 
+async def should_ai_reply_to_lead(session: AsyncSession, lead: Lead, *, sender_is_bot: bool = False) -> bool:
+    mode = await ai_settings_service.get_ai_chat_filter(session, lead.account_id)
+    lead_filter = getattr(lead, "ai_filter", "default") or "default"
+    if mode == "none":
+        return False
+    if mode == "humans":
+        return not sender_is_bot
+    if mode == "new":
+        return lead.status == "new"
+    if mode == "selected":
+        return lead_filter == "allow"
+    if mode == "exclude":
+        return lead_filter != "block"
+    return True
+
+
 class TelegramConversationService:
     def __init__(self, groq_service: GroqService | None = None) -> None:
         self.settings = get_settings()
@@ -26,6 +42,7 @@ class TelegramConversationService:
         *,
         is_audio: bool = False,
         audio_path: str | None = None,
+        sender_is_bot: bool = False,
     ) -> str | None:
         lead.last_user_message_at = datetime.utcnow()
         await chat_service.add_message(
@@ -38,6 +55,8 @@ class TelegramConversationService:
             audio_path=audio_path,
         )
         if lead.ai_paused or await ai_settings_service.get_ai_pause_status(session, lead.account_id):
+            return None
+        if not await should_ai_reply_to_lead(session, lead, sender_is_bot=sender_is_bot):
             return None
 
         history = await chat_service.get_history(session, lead.id, limit=10)

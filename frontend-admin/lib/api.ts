@@ -1,6 +1,19 @@
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getToken } from "@/lib/auth";
-import type { AdminUser, AIPauseStatus, AISettings, ChatMessage, CurrentUser, GroqKeyStatus, Lead, LeadStatus, TelegramAccount } from "@/lib/types";
+import type {
+  AdminUser,
+  AIChatFilterMode,
+  AIChatFilterSettings,
+  AIPauseStatus,
+  AISettings,
+  ChatMessage,
+  CurrentUser,
+  GroqKeyStatus,
+  Lead,
+  LeadAIFilter,
+  LeadStatus,
+  TelegramAccount,
+} from "@/lib/types";
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
@@ -44,7 +57,13 @@ export function fetchLeadChat(leadId: string) {
   return request<ChatMessage[]>(`/api/leads/${leadId}/chat`);
 }
 
-export function updateLead(leadId: string, patch: Partial<Pick<Lead, "first_name" | "phone" | "product_interest" | "ai_paused">> & { status?: LeadStatus }) {
+export function updateLead(
+  leadId: string,
+  patch: Partial<Pick<Lead, "first_name" | "phone" | "product_interest" | "ai_paused">> & {
+    status?: LeadStatus;
+    ai_filter?: LeadAIFilter;
+  },
+) {
   return request<Lead>(`/api/leads/${leadId}`, {
     method: "PATCH",
     body: JSON.stringify(patch),
@@ -84,6 +103,17 @@ export function updateAIPauseStatus(payload: AIPauseStatus) {
   return request<AIPauseStatus>("/api/ai-settings/pause", {
     method: "PUT",
     body: JSON.stringify(payload),
+  });
+}
+
+export function fetchAIChatFilter() {
+  return request<AIChatFilterSettings>("/api/ai-settings/chat-filter");
+}
+
+export function updateAIChatFilter(mode: AIChatFilterMode) {
+  return request<AIChatFilterSettings>("/api/ai-settings/chat-filter", {
+    method: "PUT",
+    body: JSON.stringify({ mode }),
   });
 }
 

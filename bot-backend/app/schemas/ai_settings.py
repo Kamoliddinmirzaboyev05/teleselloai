@@ -25,6 +25,10 @@ class AIPauseStatus(BaseModel):
     ai_paused: bool = False
 
 
+class AIChatFilterSettings(BaseModel):
+    mode: str = "all"
+
+
 class GroqKeyRead(BaseModel):
     groq_api_key_set: bool = False
 

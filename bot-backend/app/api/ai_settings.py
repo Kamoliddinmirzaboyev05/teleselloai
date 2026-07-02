@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.deps import SessionDep, require_admin
-from app.schemas.ai_settings import AISettings, AIPauseStatus, GroqKeyRead, GroqKeyUpdate
+from app.schemas.ai_settings import AIChatFilterSettings, AISettings, AIPauseStatus, GroqKeyRead, GroqKeyUpdate
 from app.schemas.user import CurrentUser
 from app.services import ai_settings_service
 
@@ -21,6 +21,26 @@ async def save_ai_pause_status(
 ) -> AIPauseStatus:
     ai_paused = await ai_settings_service.update_ai_pause_status(session, payload.ai_paused, current_user.account_id)
     return AIPauseStatus(ai_paused=ai_paused)
+
+
+@router.get("/chat-filter", response_model=AIChatFilterSettings)
+async def read_ai_chat_filter(session: SessionDep, current_user: CurrentUser = Depends(require_admin)) -> AIChatFilterSettings:
+    return AIChatFilterSettings(mode=await ai_settings_service.get_ai_chat_filter(session, current_user.account_id))
+
+
+@router.put("/chat-filter", response_model=AIChatFilterSettings)
+async def save_ai_chat_filter(
+    payload: AIChatFilterSettings,
+    session: SessionDep,
+    current_user: CurrentUser = Depends(require_admin),
+) -> AIChatFilterSettings:
+    try:
+        mode = await ai_settings_service.update_ai_chat_filter(session, payload.mode, current_user.account_id)
+    except ValueError as exc:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return AIChatFilterSettings(mode=mode)
 
 
 @router.get("/groq-key", response_model=GroqKeyRead)

@@ -10,7 +10,9 @@ from app.schemas.ai_settings import AISettings
 
 AI_SETTINGS_KEY = "ai_settings"
 AI_PAUSE_KEY = "ai_paused"
+AI_CHAT_FILTER_KEY = "ai_chat_filter"
 GROQ_API_KEY = "groq_api_key"
+VALID_AI_CHAT_FILTER_MODES = {"all", "humans", "new", "selected", "exclude", "none"}
 
 DEFAULT_AI_SETTINGS = AISettings().model_dump()
 
@@ -93,6 +95,30 @@ async def update_ai_pause_status(session: AsyncSession, ai_paused: bool, account
         session.add(Setting(account_id=account_id, key=AI_PAUSE_KEY, value=encoded))
     await session.commit()
     return bool(ai_paused)
+
+
+async def get_ai_chat_filter(session: AsyncSession, account_id: UUID | None = None) -> str:
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == AI_CHAT_FILTER_KEY))
+    setting = result.scalar_one_or_none()
+    if not setting and account_id is not None:
+        result = await session.execute(select(Setting).where(Setting.account_id.is_(None), Setting.key == AI_CHAT_FILTER_KEY))
+        setting = result.scalar_one_or_none()
+    mode = setting.value.strip() if setting and setting.value else "all"
+    return mode if mode in VALID_AI_CHAT_FILTER_MODES else "all"
+
+
+async def update_ai_chat_filter(session: AsyncSession, mode: str, account_id: UUID | None = None) -> str:
+    cleaned = mode.strip()
+    if cleaned not in VALID_AI_CHAT_FILTER_MODES:
+        raise ValueError("Invalid AI chat filter")
+    result = await session.execute(select(Setting).where(Setting.account_id == account_id, Setting.key == AI_CHAT_FILTER_KEY))
+    setting = result.scalar_one_or_none()
+    if setting:
+        setting.value = cleaned
+    else:
+        session.add(Setting(account_id=account_id, key=AI_CHAT_FILTER_KEY, value=cleaned))
+    await session.commit()
+    return cleaned
 
 
 async def get_groq_api_key(session: AsyncSession, account_id: UUID | None = None) -> str:

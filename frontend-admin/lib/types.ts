@@ -1,4 +1,6 @@
 export type LeadStatus = "new" | "thinking" | "won" | "lost";
+export type LeadAIFilter = "default" | "allow" | "block";
+export type AIChatFilterMode = "all" | "humans" | "new" | "selected" | "exclude" | "none";
 
 export type Lead = {
   id: string;
@@ -10,6 +12,7 @@ export type Lead = {
   product_interest: string | null;
   status: LeadStatus;
   ai_paused: boolean;
+  ai_filter: LeadAIFilter;
   last_user_message_at: string | null;
   last_ai_message_at: string | null;
   created_at: string;
@@ -76,6 +79,10 @@ export type AISettings = {
 
 export type AIPauseStatus = {
   ai_paused: boolean;
+};
+
+export type AIChatFilterSettings = {
+  mode: AIChatFilterMode;
 };
 
 export type GroqKeyStatus = {

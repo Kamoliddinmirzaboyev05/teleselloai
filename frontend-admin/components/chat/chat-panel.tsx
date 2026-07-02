@@ -1,7 +1,8 @@
-import { PauseCircle } from "lucide-react";
+import { Bot, PauseCircle, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import type { ChatMessage, Lead, LeadStatus } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import type { ChatMessage, Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
 import { cn, formatDateTime } from "@/lib/utils";
 
 export function ChatPanel({
@@ -9,11 +10,13 @@ export function ChatPanel({
   messages,
   aiPaused,
   onChangeStatus,
+  onChangeAIFilter,
 }: {
   lead: Lead | null;
   messages: ChatMessage[];
   aiPaused: boolean;
   onChangeStatus: (lead: Lead, status: LeadStatus) => void;
+  onChangeAIFilter: (lead: Lead, aiFilter: LeadAIFilter) => void;
 }) {
   if (!lead) {
     return <aside className="border-l border-border bg-white p-5 text-sm text-muted-foreground">Lead tanlanmagan</aside>;
@@ -55,6 +58,27 @@ export function ChatPanel({
               AI pause
             </span>
           ) : null}
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <Button
+            variant={lead.ai_filter === "allow" ? "primary" : "outline"}
+            className="h-8 px-2 text-xs"
+            onClick={() => onChangeAIFilter(lead, "allow")}
+          >
+            <Bot className="h-3.5 w-3.5" />
+            Yozsin
+          </Button>
+          <Button
+            variant={lead.ai_filter === "block" ? "primary" : "outline"}
+            className="h-8 px-2 text-xs"
+            onClick={() => onChangeAIFilter(lead, "block")}
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            Yozmasin
+          </Button>
+          <Button variant="outline" className="h-8 px-2 text-xs" onClick={() => onChangeAIFilter(lead, "default")}>
+            Oddiy
+          </Button>
         </div>
       </div>
       <div className="flex-1 space-y-3 overflow-auto p-4">

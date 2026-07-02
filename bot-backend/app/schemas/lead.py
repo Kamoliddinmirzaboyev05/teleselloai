@@ -14,6 +14,7 @@ class LeadRead(BaseModel):
     product_interest: str | None
     status: str
     ai_paused: bool
+    ai_filter: str
     last_user_message_at: datetime | None
     last_ai_message_at: datetime | None
     created_at: datetime
@@ -28,3 +29,4 @@ class LeadUpdate(BaseModel):
     product_interest: str | None = None
     status: str | None = None
     ai_paused: bool | None = None
+    ai_filter: str | None = None

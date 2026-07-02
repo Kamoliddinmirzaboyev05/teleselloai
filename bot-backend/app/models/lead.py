@@ -19,6 +19,7 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     product_interest: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="new")
     ai_paused: Mapped[bool] = mapped_column(Boolean, default=False)
+    ai_filter: Mapped[str] = mapped_column(String(50), default="default")
     last_user_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_ai_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
