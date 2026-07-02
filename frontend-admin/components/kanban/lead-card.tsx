@@ -1,6 +1,7 @@
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { Bot, Clock, Phone, UserRound } from "lucide-react";
+import type { PointerEvent } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import type { Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
@@ -27,17 +28,23 @@ export function LeadCard({
     transform: CSS.Translate.toString(transform),
     transition,
   };
+  const stopInteractivePointer = (event: PointerEvent<HTMLElement>) => {
+    event.stopPropagation();
+  };
 
   return (
     <article
       ref={setNodeRef}
       style={style}
       className={cn(
-        "cursor-pointer rounded-lg border bg-white p-3 text-sm shadow-sm transition hover:border-primary hover:shadow-md",
+        "cursor-grab rounded-lg border bg-white p-3 text-sm shadow-sm transition hover:border-primary hover:shadow-md active:cursor-grabbing",
         active ? "border-primary shadow-sm ring-2 ring-teal-100" : "border-border",
         isDragging && "z-20 opacity-70 shadow-lg",
       )}
       onClick={onClick}
+      title="Cardni sudrab boshqa ustunga ko'chiring"
+      {...listeners}
+      {...attributes}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -46,16 +53,6 @@ export function LeadCard({
         </div>
         <Badge value={lead.status} />
       </div>
-      <button
-        type="button"
-        className="mb-2 h-7 w-full rounded border border-dashed border-border bg-background text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
-        onClick={(event) => event.stopPropagation()}
-        title="Cardni boshqa ustunga ko'chirish"
-        {...listeners}
-        {...attributes}
-      >
-        Ko'chirish
-      </button>
       {lead.ai_filter !== "default" ? (
         <p className="mb-2 inline-flex items-center gap-1 rounded bg-teal-50 px-2 py-1 text-xs font-medium text-primary">
           <Bot className="h-3.5 w-3.5" />
@@ -78,6 +75,7 @@ export function LeadCard({
       </div>
       <select
         value={lead.status}
+        onPointerDown={stopInteractivePointer}
         onClick={(event) => event.stopPropagation()}
         onChange={(event) => onChangeStatus(event.target.value as LeadStatus)}
         className="mt-3 h-8 w-full rounded border border-border bg-white px-2 text-xs"
@@ -89,6 +87,7 @@ export function LeadCard({
       </select>
       <select
         value={lead.ai_filter}
+        onPointerDown={stopInteractivePointer}
         onClick={(event) => event.stopPropagation()}
         onChange={(event) => onChangeAIFilter(event.target.value as LeadAIFilter)}
         className="mt-2 h-8 w-full rounded border border-border bg-white px-2 text-xs"
