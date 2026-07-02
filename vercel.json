@@ -1,12 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "cd frontend-admin && npm ci",
-  "buildCommand": "cd frontend-admin && npm run build",
+  "installCommand": "if [ -f frontend-admin/package-lock.json ]; then cd frontend-admin && npm ci; else npm ci; fi",
+  "buildCommand": "if [ -f frontend-admin/package.json ]; then cd frontend-admin && npm run build && rm -rf ../dist && cp -R dist ../dist; else npm run build; fi",
   "env": {
     "NODE_VERSION": "22"
   },
-  "outputDirectory": "frontend-admin/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",
