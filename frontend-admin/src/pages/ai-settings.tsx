@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell, SidebarToggleButton } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +22,7 @@ const emptySettings: AISettings = {
   forbidden_topics: "",
   escalation_rules: "",
   custom_instructions: "",
+  conversation_style: "",
   faq: [],
 };
 
@@ -35,6 +36,7 @@ const textareas: Array<{ key: TextAISettingsKey; label: string; rows?: number }>
   { key: "forbidden_topics", label: "AI aytmasligi kerak bo'lgan gaplar", rows: 3 },
   { key: "escalation_rules", label: "Admin chaqiriladigan holatlar", rows: 3 },
   { key: "custom_instructions", label: "Qo'shimcha ko'rsatmalar", rows: 4 },
+  { key: "conversation_style", label: "Chatdan o'rganilgan gaplashish uslubi", rows: 5 },
 ];
 
 export default function AISettingsPage() {
@@ -124,9 +126,12 @@ export default function AISettingsPage() {
     <AppShell>
       <main className="min-h-screen bg-background">
         <header className="flex h-16 items-center justify-between border-b border-border bg-white px-5">
-          <div>
-            <h1 className="text-lg font-semibold">AI Sozlamalar</h1>
-            <p className="text-sm text-muted-foreground">AI sotuvchini biznesingizga mos gapirtiring</p>
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <div>
+              <h1 className="text-lg font-semibold">AI Sozlamalar</h1>
+              <p className="text-sm text-muted-foreground">AI sotuvchini biznesingizga mos gapirtiring</p>
+            </div>
           </div>
           <Button onClick={onSave} disabled={loading || saving}>
             <Save className="h-4 w-4" />

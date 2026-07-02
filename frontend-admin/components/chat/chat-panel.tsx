@@ -9,6 +9,9 @@ export function ChatPanel({
   lead,
   messages,
   aiPaused,
+  trainingStyle,
+  trainStyleMessage,
+  onTrainStyle,
   onChangeStatus,
   onChangeAIFilter,
   onClose,
@@ -16,6 +19,9 @@ export function ChatPanel({
   lead: Lead | null;
   messages: ChatMessage[];
   aiPaused: boolean;
+  trainingStyle?: boolean;
+  trainStyleMessage?: string;
+  onTrainStyle: (lead: Lead) => void;
   onChangeStatus: (lead: Lead, status: LeadStatus) => void;
   onChangeAIFilter: (lead: Lead, aiFilter: LeadAIFilter) => void;
   onClose: () => void;
@@ -93,6 +99,17 @@ export function ChatPanel({
             Oddiy
           </Button>
         </div>
+        <Button
+          variant="secondary"
+          className="mt-3 h-8 w-full px-2 text-xs"
+          onClick={() => onTrainStyle(lead)}
+          disabled={trainingStyle || messages.length === 0}
+          title="Shu chatdagi gaplashish uslubini AI sozlamalariga saqlash"
+        >
+          <Bot className="h-3.5 w-3.5" />
+          {trainingStyle ? "O'rganmoqda" : "Shu chatdan AI uslubini o'rgatish"}
+        </Button>
+        {trainStyleMessage ? <p className="mt-2 rounded bg-teal-50 p-2 text-xs text-primary">{trainStyleMessage}</p> : null}
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-background p-4">
         {messages.map((message) => (

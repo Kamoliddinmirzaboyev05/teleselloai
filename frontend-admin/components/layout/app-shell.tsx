@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Bot,
   LayoutDashboard,
@@ -26,7 +27,31 @@ const navItems = [
   { to: "/settings", label: "Sozlamalar", icon: Settings },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+const SidebarContext = createContext<{
+  collapsed: boolean;
+  toggleSidebar: () => void;
+} | null>(null);
+
+export function SidebarToggleButton() {
+  const sidebar = useContext(SidebarContext);
+  if (!sidebar) {
+    return null;
+  }
+  const ToggleIcon = sidebar.collapsed ? PanelLeftOpen : PanelLeftClose;
+  return (
+    <button
+      type="button"
+      onClick={sidebar.toggleSidebar}
+      className="hidden h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-white text-muted-foreground transition hover:bg-muted hover:text-foreground lg:inline-flex"
+      title={sidebar.collapsed ? "Sidebarni kengaytirish" : "Sidebarni yig'ish"}
+      aria-label={sidebar.collapsed ? "Sidebarni kengaytirish" : "Sidebarni yig'ish"}
+    >
+      <ToggleIcon className="h-4 w-4" />
+    </button>
+  );
+}
+
+export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [collapsed, setCollapsed] = useState(() => {
@@ -60,10 +85,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const sidebarWidthClass = collapsed ? "lg:w-16" : "lg:w-60";
   const contentPaddingClass = collapsed ? "lg:pl-16" : "lg:pl-60";
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SidebarContext.Provider value={{ collapsed, toggleSidebar }}>
+      <div className="min-h-screen bg-background text-foreground">
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden border-r border-border bg-white transition-[width] duration-200 lg:flex lg:flex-col",
@@ -80,20 +105,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p className="truncate text-xs text-muted-foreground">Sales CRM</p>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          className={cn(
-            "mb-3 flex h-9 items-center rounded text-muted-foreground transition duration-150 hover:bg-muted hover:text-foreground",
-            collapsed ? "w-10 justify-center" : "w-full gap-3 px-3 text-sm font-medium",
-          )}
-          title={collapsed ? "Sidebarni kengaytirish" : "Sidebarni yig'ish"}
-          aria-label={collapsed ? "Sidebarni kengaytirish" : "Sidebarni yig'ish"}
-        >
-          <ToggleIcon className="h-4 w-4 shrink-0" />
-          <span className={cn(collapsed && "hidden")}>{collapsed ? "" : "Sidebar"}</span>
-        </button>
 
         <nav className={cn("space-y-1", collapsed && "flex w-full flex-col items-center")}>
           {navItems.map((item) => {
@@ -179,6 +190,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </button>
       </aside>
       <main className={cn("animate-page-enter transition-[padding] duration-200", contentPaddingClass)}>{children}</main>
-    </div>
+      </div>
+    </SidebarContext.Provider>
   );
 }

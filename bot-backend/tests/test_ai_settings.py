@@ -7,7 +7,7 @@ import pytest
 
 from app.services import telegram_service
 from app.services.ai_settings_service import DEFAULT_AI_SETTINGS, normalize_ai_settings
-from app.services.prompt_service import build_system_prompt
+from app.services.prompt_service import build_conversation_style_profile, build_system_prompt
 from app.services.telegram_service import TelegramConversationService
 
 
@@ -30,6 +30,12 @@ def test_normalize_ai_settings_keeps_known_fields_and_faq_pairs():
     assert "unknown" not in settings
 
 
+def test_normalize_ai_settings_keeps_conversation_style():
+    settings = normalize_ai_settings({"conversation_style": "Qisqa, samimiy, savol bilan davom ettir."})
+
+    assert settings["conversation_style"] == "Qisqa, samimiy, savol bilan davom ettir."
+
+
 def test_build_system_prompt_includes_business_settings_and_data_capture_contract():
     settings = dict(DEFAULT_AI_SETTINGS)
     settings.update(
@@ -38,6 +44,7 @@ def test_build_system_prompt_includes_business_settings_and_data_capture_contrac
             "services": "AI sales bot, CRM dashboard",
             "pricing": "Basic 500 ming, Pro 1.5 mln",
             "tone": "samimiy, qisqa, professional",
+            "conversation_style": "Javoblar 1-2 gap bo'lsin, mijozga Aka deb murojaat qilsin.",
             "faq": [{"question": "Demo bormi?", "answer": "Ha, demo ko'rsatamiz."}],
         }
     )
@@ -48,9 +55,25 @@ def test_build_system_prompt_includes_business_settings_and_data_capture_contrac
     assert "AI sales bot, CRM dashboard" in prompt
     assert "Basic 500 ming, Pro 1.5 mln" in prompt
     assert "samimiy, qisqa, professional" in prompt
+    assert "Javoblar 1-2 gap bo'lsin" in prompt
     assert "Demo bormi?" in prompt
     assert "DATA_CAPTURE" in prompt
     assert json.dumps({"first_name": None, "phone": None, "product_interest": None, "status": "new"}) in prompt
+
+
+def test_build_conversation_style_profile_prefers_assistant_and_admin_messages():
+    history = [
+        SimpleNamespace(role="user", content="Narxi qancha?"),
+        SimpleNamespace(role="assistant", content="Salom aka, narx loyiha hajmiga qarab aytiladi. Avval qaysi xizmat kerakligini bilsam bo'ladimi?"),
+        SimpleNamespace(role="admin", content="Aka, sizga 1 kunda demo ko'rsatamiz. Telefon raqamingizni qoldirasizmi?"),
+    ]
+
+    profile = build_conversation_style_profile(history)
+
+    assert "Chatdan olingan gaplashish uslubi" in profile
+    assert "Salom aka" in profile
+    assert "Telefon raqamingizni qoldirasizmi?" in profile
+    assert "Narxi qancha?" not in profile
 
 
 @pytest.mark.asyncio

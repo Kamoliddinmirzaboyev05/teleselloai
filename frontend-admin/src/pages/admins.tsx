@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { RefreshCw, ShieldCheck, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell, SidebarToggleButton } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createUser, fetchMe, fetchUsers, updateUser } from "@/lib/api";
@@ -78,9 +78,12 @@ export default function AdminsPage() {
     <AppShell>
       <main className="min-h-screen bg-background">
         <header className="flex h-16 items-center justify-between border-b border-border bg-white px-5">
-          <div>
-            <h1 className="text-lg font-semibold">Adminlar</h1>
-            <p className="text-sm text-muted-foreground">Foydalanuvchi va rollarni boshqarish</p>
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <div>
+              <h1 className="text-lg font-semibold">Adminlar</h1>
+              <p className="text-sm text-muted-foreground">Foydalanuvchi va rollarni boshqarish</p>
+            </div>
           </div>
           <Button variant="outline" onClick={loadUsers}>
             <RefreshCw className="h-4 w-4" />

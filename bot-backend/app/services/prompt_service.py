@@ -26,6 +26,7 @@ def build_system_prompt(ai_settings: dict | None = None) -> str:
     _append_section(parts, "Do not say or discuss", settings.get("forbidden_topics"))
     _append_section(parts, "Escalate to admin when", settings.get("escalation_rules"))
     _append_section(parts, "Extra instructions", settings.get("custom_instructions"))
+    _append_section(parts, "Conversation style learned from selected chat", settings.get("conversation_style"))
 
     faq = settings.get("faq") or []
     if faq:
@@ -42,6 +43,29 @@ def build_system_prompt(ai_settings: dict | None = None) -> str:
         "Valid statuses are new, thinking, won, lost. Do not mention DATA_CAPTURE to the customer."
     )
     return "\n\n".join(parts)
+
+
+def build_conversation_style_profile(history: list[ChatHistory]) -> str:
+    style_messages = [item.content.strip() for item in history if item.role in {"assistant", "admin"} and item.content.strip()]
+    if not style_messages:
+        style_messages = [item.content.strip() for item in history if item.content.strip()]
+    examples = style_messages[-6:]
+    if not examples:
+        return ""
+
+    parts = [
+        "Chatdan olingan gaplashish uslubi:",
+        "- Javoblar shu namunalardagi ohangga yaqin bo'lsin.",
+        "- Juda uzun yozma; mijozga sodda, tabiiy va qisqa javob ber.",
+        "- Kerak bo'lsa bitta aniq savol bilan davom ettir.",
+        "Namuna javoblar:",
+    ]
+    for index, message in enumerate(examples, start=1):
+        compact = " ".join(message.split())
+        if len(compact) > 320:
+            compact = compact[:317].rstrip() + "..."
+        parts.append(f"{index}. {compact}")
+    return "\n".join(parts)
 
 
 def build_messages(history: list[ChatHistory], ai_settings: dict | None = None) -> list[dict[str, str]]:

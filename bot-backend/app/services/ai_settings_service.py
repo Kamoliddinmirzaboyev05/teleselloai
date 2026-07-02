@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.setting import Setting
 from app.schemas.ai_settings import AISettings
+from app.services.prompt_service import build_conversation_style_profile
 
 AI_SETTINGS_KEY = "ai_settings"
 AI_PAUSE_KEY = "ai_paused"
@@ -67,6 +68,19 @@ async def update_ai_settings(session: AsyncSession, payload: dict[str, Any], acc
         session.add(Setting(account_id=account_id, key=AI_SETTINGS_KEY, value=encoded))
     await session.commit()
     return data
+
+
+async def update_conversation_style_from_history(
+    session: AsyncSession,
+    history: list[Any],
+    account_id: UUID | None = None,
+) -> dict[str, Any]:
+    profile = build_conversation_style_profile(history)
+    if not profile:
+        raise ValueError("Chatda uslub chiqarish uchun yetarli xabar yo'q")
+    settings = await get_ai_settings(session, account_id)
+    settings["conversation_style"] = profile
+    return await update_ai_settings(session, settings, account_id)
 
 
 def parse_ai_pause_status(value: str | None) -> bool:

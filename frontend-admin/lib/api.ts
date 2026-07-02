@@ -57,6 +57,10 @@ export function fetchLeadChat(leadId: string) {
   return request<ChatMessage[]>(`/api/leads/${leadId}/chat`);
 }
 
+export function trainAIStyleFromLeadChat(leadId: string) {
+  return request<AISettings>(`/api/leads/${leadId}/style-profile`, { method: "POST" });
+}
+
 export function updateLead(
   leadId: string,
   patch: Partial<Pick<Lead, "first_name" | "phone" | "product_interest" | "ai_paused">> & {

@@ -18,6 +18,7 @@ class AISettings(BaseModel):
     forbidden_topics: str = ""
     escalation_rules: str = ""
     custom_instructions: str = ""
+    conversation_style: str = ""
     faq: list[FAQItem] = Field(default_factory=list)
 
 

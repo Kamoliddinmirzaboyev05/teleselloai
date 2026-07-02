@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { KeyRound, Send, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell, SidebarToggleButton } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fetchTelegramAccount, startTelegramLogin, updateTelegramAccount, verifyTelegramLogin } from "@/lib/api";
@@ -112,9 +112,12 @@ export default function TelegramPage() {
     <AppShell>
       <main className="min-h-screen bg-background">
         <header className="flex h-16 items-center justify-between border-b border-border bg-white px-5">
-          <div>
-            <h1 className="text-lg font-semibold">Telegram ulash</h1>
-            <p className="text-sm text-muted-foreground">Har admin o&apos;z Telegram accountini ulaydi</p>
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <div>
+              <h1 className="text-lg font-semibold">Telegram ulash</h1>
+              <p className="text-sm text-muted-foreground">Har admin o&apos;z Telegram accountini ulaydi</p>
+            </div>
           </div>
           <span className="rounded bg-muted px-3 py-1 text-xs">{loading ? "yuklanmoqda" : account.telegram_status}</span>
         </header>

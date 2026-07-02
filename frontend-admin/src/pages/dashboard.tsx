@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell, SidebarToggleButton } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
-import { fetchAIChatFilter, fetchAIPauseStatus, fetchLeadChat, fetchLeads, updateAIChatFilter, updateAIPauseStatus, updateLead } from "@/lib/api";
+import { fetchAIChatFilter, fetchAIPauseStatus, fetchLeadChat, fetchLeads, trainAIStyleFromLeadChat, updateAIChatFilter, updateAIPauseStatus, updateLead } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { AIChatFilterMode, ChatMessage, Lead, LeadAIFilter, LeadStatus } from "@/lib/types";
 
@@ -33,6 +33,8 @@ export default function DashboardPage() {
   const [aiFilterMode, setAiFilterMode] = useState<AIChatFilterMode>("all");
   const [pauseSaving, setPauseSaving] = useState(false);
   const [pauseMessage, setPauseMessage] = useState("");
+  const [trainingStyleLeadId, setTrainingStyleLeadId] = useState<string | null>(null);
+  const [trainStyleMessage, setTrainStyleMessage] = useState("");
 
   const selectedLead = useMemo(() => leads.find((lead) => lead.id === selectedLeadId) ?? null, [leads, selectedLeadId]);
 
@@ -59,6 +61,7 @@ export default function DashboardPage() {
   async function onSelectLead(lead: Lead) {
     setSelectedLeadId(lead.id);
     setChatOpen(true);
+    setTrainStyleMessage("");
     await loadChat(lead.id);
   }
 
@@ -66,6 +69,7 @@ export default function DashboardPage() {
     setChatOpen(false);
     setSelectedLeadId(null);
     setMessages([]);
+    setTrainStyleMessage("");
   }
 
   async function onChangeStatus(lead: Lead, status: LeadStatus) {
@@ -82,6 +86,19 @@ export default function DashboardPage() {
   async function onChangeAIChatFilter(mode: AIChatFilterMode) {
     const updated = await updateAIChatFilter(mode);
     setAiFilterMode(updated.mode);
+  }
+
+  async function onTrainStyleFromChat(lead: Lead) {
+    setTrainingStyleLeadId(lead.id);
+    setTrainStyleMessage("");
+    try {
+      await trainAIStyleFromLeadChat(lead.id);
+      setTrainStyleMessage("Shu chat uslubi AI sozlamalariga saqlandi.");
+    } catch {
+      setTrainStyleMessage("Uslubni saqlash uchun chatda yetarli xabar bo'lishi kerak.");
+    } finally {
+      setTrainingStyleLeadId(null);
+    }
   }
 
   async function onTogglePause() {
@@ -113,11 +130,14 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex h-screen min-h-0 flex-col overflow-hidden">
         <header className="flex min-h-20 flex-col gap-3 border-b border-border bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <h1 className="text-lg font-semibold">CRM Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              {leads.length} ta lead · {showChat ? "Chat ochiq" : "Chat yopiq"}
-            </p>
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <div>
+              <h1 className="text-lg font-semibold">CRM Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                {leads.length} ta lead · {showChat ? "Chat ochiq" : "Chat yopiq"}
+              </p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -160,6 +180,9 @@ export default function DashboardPage() {
               lead={selectedLead}
               messages={messages}
               aiPaused={aiPaused}
+              trainingStyle={trainingStyleLeadId === selectedLead.id}
+              trainStyleMessage={trainStyleMessage}
+              onTrainStyle={onTrainStyleFromChat}
               onChangeStatus={onChangeStatus}
               onChangeAIFilter={onChangeLeadAIFilter}
               onClose={onCloseChat}

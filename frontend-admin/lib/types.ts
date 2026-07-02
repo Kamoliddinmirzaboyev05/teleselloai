@@ -74,6 +74,7 @@ export type AISettings = {
   forbidden_topics: string;
   escalation_rules: string;
   custom_instructions: string;
+  conversation_style: string;
   faq: FAQItem[];
 };
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Save } from "lucide-react";
 
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell, SidebarToggleButton } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { changePassword } from "@/lib/api";
@@ -38,9 +38,12 @@ export default function SettingsPage() {
     <AppShell>
       <main className="min-h-screen bg-background">
         <header className="flex h-16 items-center justify-between border-b border-border bg-white px-5">
-          <div>
-            <h1 className="text-lg font-semibold">Sozlamalar</h1>
-            <p className="text-sm text-muted-foreground">Profil va xavfsizlik sozlamalari</p>
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <div>
+              <h1 className="text-lg font-semibold">Sozlamalar</h1>
+              <p className="text-sm text-muted-foreground">Profil va xavfsizlik sozlamalari</p>
+            </div>
           </div>
         </header>
 
