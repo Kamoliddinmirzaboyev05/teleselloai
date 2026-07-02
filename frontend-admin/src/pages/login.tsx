@@ -53,7 +53,7 @@ export default function LoginPage() {
             value={baseUrl}
             onChange={(event) => setBaseUrl(event.target.value)}
             className="mt-1"
-            placeholder="https://teleselloai-api.159.223.151.104.sslip.io"
+            placeholder="http://13.60.104.64"
           />
         </label>
         <label className="mb-4 block text-sm font-medium">

@@ -1,5 +1,5 @@
 const API_BASE_URL_KEY = "telegram_ai_sales_api_base_url";
-export const SERVER_API_BASE_URL = "https://teleselloai-api.159.223.151.104.sslip.io";
+export const SERVER_API_BASE_URL = "http://13.60.104.64";
 
 export const DEFAULT_API_BASE_URL = import.meta.env.VITE_API_URL ?? SERVER_API_BASE_URL;
 

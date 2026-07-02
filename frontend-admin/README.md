@@ -13,12 +13,12 @@ npm run dev
 Open `http://localhost:5173`.
 
 The frontend expects the backend at `VITE_API_URL`, defaulting to
-`https://teleselloai-api.159.223.151.104.sslip.io`.
+`http://13.60.104.64`.
 
 For Vercel, set:
 
 ```env
-VITE_API_URL=https://teleselloai-api.159.223.151.104.sslip.io
+VITE_API_URL=http://13.60.104.64
 ```
 
 Login username and password are configured in the backend `.env` with
