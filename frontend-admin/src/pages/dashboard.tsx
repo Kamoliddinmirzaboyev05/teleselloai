@@ -24,16 +24,14 @@ export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [chatOpen, setChatOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [aiPaused, setAiPaused] = useState(false);
   const [aiFilterMode, setAiFilterMode] = useState<AIChatFilterMode>("all");
   const [pauseSaving, setPauseSaving] = useState(false);
   const [pauseMessage, setPauseMessage] = useState("");
 
-  const selectedLead = useMemo(
-    () => leads.find((lead) => lead.id === selectedLeadId) ?? leads[0],
-    [leads, selectedLeadId],
-  );
+  const selectedLead = useMemo(() => leads.find((lead) => lead.id === selectedLeadId) ?? null, [leads, selectedLeadId]);
 
   const loadLeads = useCallback(async () => {
     if (!getToken()) {
@@ -46,13 +44,10 @@ export default function DashboardPage() {
       setLeads(data);
       setAiPaused(pauseStatus.ai_paused);
       setAiFilterMode(filterStatus.mode);
-      if (!selectedLeadId && data[0]) {
-        setSelectedLeadId(data[0].id);
-      }
     } finally {
       setLoading(false);
     }
-  }, [navigate, selectedLeadId]);
+  }, [navigate]);
 
   const loadChat = useCallback(async (leadId: string) => {
     setMessages(await fetchLeadChat(leadId));
@@ -60,7 +55,14 @@ export default function DashboardPage() {
 
   async function onSelectLead(lead: Lead) {
     setSelectedLeadId(lead.id);
+    setChatOpen(true);
     await loadChat(lead.id);
+  }
+
+  function onCloseChat() {
+    setChatOpen(false);
+    setSelectedLeadId(null);
+    setMessages([]);
   }
 
   async function onChangeStatus(lead: Lead, status: LeadStatus) {
@@ -96,20 +98,24 @@ export default function DashboardPage() {
   }, [loadLeads]);
 
   useEffect(() => {
-    if (selectedLead?.id) {
+    if (chatOpen && selectedLead?.id) {
       void loadChat(selectedLead.id);
     }
-  }, [loadChat, selectedLead?.id]);
+  }, [chatOpen, loadChat, selectedLead?.id]);
+
+  const showChat = chatOpen && selectedLead;
 
   return (
     <AppShell>
       <div className="flex min-h-screen flex-col">
-        <header className="flex h-16 items-center justify-between border-b border-border bg-white px-5">
+        <header className="flex min-h-20 flex-col gap-3 border-b border-border bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <h1 className="text-lg font-semibold">CRM Dashboard</h1>
-            <p className="text-sm text-muted-foreground">{leads.length} ta lead</p>
+            <p className="text-sm text-muted-foreground">
+              {leads.length} ta lead · {showChat ? "Chat ochiq" : "Chat yopiq"}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <select
               value={aiFilterMode}
               onChange={(event) => void onChangeAIChatFilter(event.target.value as AIChatFilterMode)}
@@ -133,8 +139,8 @@ export default function DashboardPage() {
           </div>
         </header>
         {pauseMessage ? <p className="border-b border-amber-200 bg-amber-50 px-5 py-2 text-sm text-amber-800">{pauseMessage}</p> : null}
-        <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
-          <section className="overflow-auto p-4">
+        <div className={showChat ? "grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_440px]" : "grid flex-1 grid-cols-1 overflow-hidden"}>
+          <section className="overflow-auto bg-background p-5">
             <KanbanBoard
               leads={leads}
               loading={loading}
@@ -143,13 +149,16 @@ export default function DashboardPage() {
               onChangeStatus={onChangeStatus}
             />
           </section>
-          <ChatPanel
-            lead={selectedLead ?? null}
-            messages={messages}
-            aiPaused={aiPaused}
-            onChangeStatus={onChangeStatus}
-            onChangeAIFilter={onChangeLeadAIFilter}
-          />
+          {showChat ? (
+            <ChatPanel
+              lead={selectedLead}
+              messages={messages}
+              aiPaused={aiPaused}
+              onChangeStatus={onChangeStatus}
+              onChangeAIFilter={onChangeLeadAIFilter}
+              onClose={onCloseChat}
+            />
+          ) : null}
         </div>
       </div>
     </AppShell>

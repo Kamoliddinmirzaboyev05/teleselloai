@@ -1,3 +1,5 @@
+import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from "@dnd-kit/core";
 import { Bot, Clock, Phone, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +17,22 @@ export function LeadCard({
   onClick: () => void;
   onChangeStatus: (status: LeadStatus) => void;
 }) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: lead.id,
+    data: { lead },
+  });
+  const style = {
+    transform: CSS.Translate.toString(transform),
+  };
+
   return (
     <article
+      ref={setNodeRef}
+      style={style}
       className={cn(
-        "cursor-pointer rounded border bg-white p-3 text-sm transition hover:border-primary",
-        active ? "border-primary shadow-sm" : "border-border",
+        "cursor-pointer rounded border bg-white p-3 text-sm transition hover:border-primary hover:shadow-sm",
+        active ? "border-primary shadow-sm ring-2 ring-teal-100" : "border-border",
+        isDragging && "z-20 opacity-70 shadow-lg",
       )}
       onClick={onClick}
     >
@@ -30,6 +43,16 @@ export function LeadCard({
         </div>
         <Badge value={lead.status} />
       </div>
+      <button
+        type="button"
+        className="mb-2 h-7 w-full rounded border border-dashed border-border bg-background text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+        onClick={(event) => event.stopPropagation()}
+        title="Cardni boshqa ustunga ko'chirish"
+        {...listeners}
+        {...attributes}
+      >
+        Ko'chirish
+      </button>
       {lead.ai_filter !== "default" ? (
         <p className="mb-2 inline-flex items-center gap-1 rounded bg-teal-50 px-2 py-1 text-xs font-medium text-primary">
           <Bot className="h-3.5 w-3.5" />

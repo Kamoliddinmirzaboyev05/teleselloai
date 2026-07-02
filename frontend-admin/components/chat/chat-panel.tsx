@@ -1,4 +1,4 @@
-import { Bot, PauseCircle, XCircle } from "lucide-react";
+import { Bot, PauseCircle, X, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,26 +11,39 @@ export function ChatPanel({
   aiPaused,
   onChangeStatus,
   onChangeAIFilter,
+  onClose,
 }: {
   lead: Lead | null;
   messages: ChatMessage[];
   aiPaused: boolean;
   onChangeStatus: (lead: Lead, status: LeadStatus) => void;
   onChangeAIFilter: (lead: Lead, aiFilter: LeadAIFilter) => void;
+  onClose: () => void;
 }) {
   if (!lead) {
     return <aside className="border-l border-border bg-white p-5 text-sm text-muted-foreground">Lead tanlanmagan</aside>;
   }
 
   return (
-    <aside className="flex min-h-0 flex-col border-l border-border bg-white">
+    <aside className="flex min-h-0 flex-col border-l border-border bg-white shadow-xl lg:shadow-none">
       <div className="border-b border-border p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="truncate text-base font-semibold">{lead.first_name || "Nomsiz lead"}</h2>
             <p className="truncate text-sm text-muted-foreground">@{lead.telegram_username || lead.telegram_id}</p>
           </div>
-          <Badge value={lead.status} />
+          <div className="flex shrink-0 items-center gap-2">
+            <Badge value={lead.status} />
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Chatni yopish"
+              title="Chatni yopish"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
           <span>{lead.phone || "Telefon yo'q"}</span>
@@ -81,7 +94,7 @@ export function ChatPanel({
           </Button>
         </div>
       </div>
-      <div className="flex-1 space-y-3 overflow-auto p-4">
+      <div className="flex-1 space-y-3 overflow-auto bg-background p-4">
         {messages.map((message) => (
           <div key={message.id} className={cn("flex", message.role === "assistant" ? "justify-end" : "justify-start")}>
             <div
