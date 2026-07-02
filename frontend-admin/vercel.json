@@ -9,6 +9,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "http://13.60.104.64/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

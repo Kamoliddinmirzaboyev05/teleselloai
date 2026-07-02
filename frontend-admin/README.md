@@ -12,13 +12,13 @@ npm run dev
 
 Open `http://localhost:5173`.
 
-The frontend expects the backend at `VITE_API_URL`, defaulting to
-`http://13.60.104.64`.
+The frontend expects the backend at `VITE_API_URL`, defaulting to same-origin
+`/api`. Vercel rewrites `/api/*` to `http://13.60.104.64`.
 
 For Vercel, set:
 
 ```env
-VITE_API_URL=http://13.60.104.64
+VITE_API_URL=
 ```
 
 Login username and password are configured in the backend `.env` with

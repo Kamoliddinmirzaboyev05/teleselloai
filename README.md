@@ -48,7 +48,8 @@ npm run dev
 Open `http://localhost:5173`.
 
 The login request goes to `VITE_API_URL/api/auth/login`. Production
-frontend should use `http://13.60.104.64`.
+frontend uses same-origin `/api` by default. Vercel rewrites `/api/*` to the
+backend at `http://13.60.104.64`.
 The frontend also lets the admin edit the backend base URL from the login page
 and from `/settings`; that browser-specific value overrides `VITE_API_URL`.
 

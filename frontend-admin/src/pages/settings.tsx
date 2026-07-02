@@ -83,7 +83,7 @@ export default function SettingsPage() {
                 value={baseUrl}
                 onChange={(event) => setBaseUrl(event.target.value)}
                 className="mt-1"
-                placeholder="http://13.60.104.64"
+                placeholder="/api"
               />
             </label>
             <div className="mt-4 flex flex-wrap gap-2">
